@@ -25,9 +25,9 @@
 
   // Extruded monogram: the glyph is drawn once per depth slice, each slice
   // offset by the current rotation, which reads as a solid extruded form.
-  var SLICES = 26;
-  var DEPTH = 1.15;
-  var FONT = '400 96px Arial, Helvetica, sans-serif';
+  var SLICES = 30;
+  var DEPTH = 1.2;
+  var FONT = '400 88px Arial, Helvetica, sans-serif';
   var LIME = '#d2f89b';
   var FACE = [239, 239, 234];
   var EDGE = [88, 96, 76];
@@ -57,11 +57,15 @@
 
   function render(now) {
     var seconds = ((now || 0) - start) / 1000;
-    var drift = reduce || dragging ? 0 : Math.sin(seconds * 0.55) * 0.14;
+    var drift = reduce || dragging ? 0 : Math.sin(seconds * 0.55) * 0.18;
     var y = yaw + drift;
     var p = pitch;
-    var scaleX = Math.cos(y) * 0.9 + 0.1;
-    var scaleY = Math.cos(p) * 0.9 + 0.1;
+
+    // Extrusion vector: a fixed isometric bias (so the mark reads as solid at
+    // rest) swung by the drag. The glyph keeps its full width, so the letters
+    // stay readable at every angle instead of collapsing edge-on.
+    var ex = clamp(0.8 + Math.sin(y) * 0.85, 0.05, 1.5);
+    var ey = clamp(-0.62 - Math.sin(p) * 0.85, -1.5, 0.05);
 
     ctx.clearRect(0, 0, size, size);
     ctx.save();
@@ -71,19 +75,15 @@
     ctx.font = FONT;
 
     for (var i = SLICES; i >= 0; i--) {
-      ctx.save();
-      ctx.translate(Math.sin(y) * i * DEPTH, -Math.sin(p) * i * DEPTH * 0.7);
-      ctx.scale(scaleX, scaleY);
       ctx.fillStyle = shades[i];
-      ctx.fillText('MN', 0, 0);
-      ctx.restore();
+      ctx.fillText('MN', ex * i * DEPTH, ey * i * DEPTH);
     }
 
     ctx.strokeStyle = LIME;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(-50 * scaleX, 46 * scaleY);
-    ctx.lineTo(50 * scaleX, 46 * scaleY);
+    ctx.moveTo(-46, 40);
+    ctx.lineTo(46, 40);
     ctx.stroke();
 
     ctx.restore();
