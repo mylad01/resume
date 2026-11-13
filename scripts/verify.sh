@@ -45,6 +45,7 @@ check "image dimensions"  has 'width="776"' index.html
 check "no vague status"   bash -c '! grep -qF "ALWAYS LEARNING" index.html'
 check "hero label"        bash -c 'grep -qE "01 / (IT SUPPORT|OPEN TO)" index.html'
 check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
+check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 
 # --- content fidelity --------------------------------------------------------
 strings=$(cat <<'EOF'

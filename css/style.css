@@ -774,8 +774,14 @@ h2 {
   .hero h1 { font-size: clamp(48px, 10vw, 74px); letter-spacing: -3px; }
   .hero-actions, .hero-footnote { margin-top: 25px; }
   .experiment { width: 100%; }
-  .sculpture { height: 330px; }
-  .experiment-hint { font-size: 8px; }
+  .experiment-top { height: 40px; font-size: 8px; }
+  .experiment-controls { display: none; }
+  .sculpture { height: 240px; }
+  .mn-mark { width: 200px; height: 200px; }
+  .sculpture-caption { bottom: 12px; left: 14px; }
+  .sculpture-caption strong { font-size: 17px; }
+  .orbit-ring { width: 210px; height: 210px; }
+  .ring-two { width: 230px; height: 230px; }
   .hero-bottom { margin-top: 0; font-size: 7px; letter-spacing: 0; }
 
   .discipline-strip {
