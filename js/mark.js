@@ -4,12 +4,12 @@
   var container = document.getElementById('mn-mark');
   if (!container) return;
 
-  var query = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  var reduce = !!(query && query.matches);
-
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext && canvas.getContext('2d');
   if (!ctx) return; // .mn-fallback stays visible
+
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var reduce = motion.matches;
 
   var size = 260;
   var dpr = window.devicePixelRatio || 1;
@@ -23,12 +23,13 @@
   if (fallback) fallback.style.display = 'none';
   container.appendChild(canvas);
 
-  // Extruded monogram: the glyph is drawn once per depth slice, each slice
-  // offset by the current rotation, which reads as a solid extruded form.
+  // The mark is the glyph drawn once per depth slice, each slice offset along
+  // a rotation-swinging extrusion vector so it reads as a solid form.
   var SLICES = 30;
   var DEPTH = 1.2;
+  var LIMIT = 0.45;
   var FONT = '400 88px Arial, Helvetica, sans-serif';
-  var LIME = '#d2f89b';
+  var LIME = getComputedStyle(document.documentElement).getPropertyValue('--lime').trim() || '#d2f89b';
   var FACE = [239, 239, 234];
   var EDGE = [88, 96, 76];
 
@@ -49,23 +50,16 @@
   var running = false;
   var lastX = 0;
   var lastY = 0;
-  var start = 0;
+  var started = 0;
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
 
   function render(now) {
-    var seconds = ((now || 0) - start) / 1000;
-    var drift = reduce || dragging ? 0 : Math.sin(seconds * 0.55) * 0.18;
-    var y = yaw + drift;
-    var p = pitch;
-
-    // Extrusion vector: a fixed isometric bias (so the mark reads as solid at
-    // rest) swung by the drag. The glyph keeps its full width, so the letters
-    // stay readable at every angle instead of collapsing edge-on.
-    var ex = clamp(0.8 + Math.sin(y) * 0.85, 0.05, 1.5);
-    var ey = clamp(-0.62 - Math.sin(p) * 0.85, -1.5, 0.05);
+    var drift = reduce || dragging ? 0 : Math.sin(((now || 0) - started) * 0.00055) * 0.18;
+    var ex = clamp(0.8 + Math.sin(yaw + drift) * 0.85, 0.05, 1.5);
+    var ey = clamp(-0.62 - Math.sin(pitch) * 0.85, -1.5, 0.05);
 
     ctx.clearRect(0, 0, size, size);
     ctx.save();
@@ -74,27 +68,25 @@
     ctx.textBaseline = 'middle';
     ctx.font = FONT;
 
-    for (var i = SLICES; i >= 0; i--) {
-      ctx.fillStyle = shades[i];
-      ctx.fillText('MN', ex * i * DEPTH, ey * i * DEPTH);
+    for (var slice = SLICES; slice >= 0; slice--) {
+      ctx.fillStyle = shades[slice];
+      ctx.fillText('MN', ex * slice * DEPTH, ey * slice * DEPTH);
     }
 
     ctx.strokeStyle = LIME;
-    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(-46, 40);
     ctx.lineTo(46, 40);
     ctx.stroke();
-
     ctx.restore();
   }
 
   function frame(now) {
     if (!running) return;
-    if (!start) start = now;
+    if (!started) started = now;
     if (!dragging) {
       yaw += velYaw;
-      pitch = clamp(pitch + velPitch, -0.45, 0.45);
+      pitch = clamp(pitch + velPitch, -LIMIT, LIMIT);
       velYaw *= 0.95;
       velPitch *= 0.95;
     }
@@ -108,43 +100,33 @@
     requestAnimationFrame(frame);
   }
 
-  function onPointerDown(e) {
+  canvas.addEventListener('pointerdown', function (e) {
     dragging = true;
     lastX = e.clientX;
     lastY = e.clientY;
     velYaw = 0;
     velPitch = 0;
-    canvas.style.cursor = 'grabbing';
-    if (canvas.setPointerCapture && e.pointerId !== undefined) {
+    if (canvas.setPointerCapture) {
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     }
-  }
+  });
 
-  function onPointerMove(e) {
+  window.addEventListener('pointermove', function (e) {
     if (!dragging) return;
     var dx = e.clientX - lastX;
     var dy = e.clientY - lastY;
     lastX = e.clientX;
     lastY = e.clientY;
     yaw += dx * 0.012;
-    pitch = clamp(pitch + dy * 0.006, -0.45, 0.45);
-    velYaw = dx * 0.012 * 0.5;
-    velPitch = dy * 0.006 * 0.5;
-    // Repaint straight away so the drag tracks the pointer even if the
-    // animation loop is throttled (background tab, low-power mode).
+    pitch = clamp(pitch + dy * 0.006, -LIMIT, LIMIT);
+    velYaw = dx * 0.006;
+    velPitch = dy * 0.003;
+    // Repaint now so the drag tracks the pointer even if the loop is throttled.
     render(0);
-  }
+  });
 
-  function onPointerUp() {
-    if (!dragging) return;
-    dragging = false;
-    canvas.style.cursor = 'grab';
-  }
-
-  canvas.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerUp);
-  window.addEventListener('pointercancel', onPointerUp);
+  window.addEventListener('pointerup', function () { dragging = false; });
+  window.addEventListener('pointercancel', function () { dragging = false; });
 
   var reset = document.getElementById('mark-reset');
   if (reset) {
@@ -160,17 +142,13 @@
   render(0);
   if (!reduce) startLoop();
 
-  if (query) {
-    var onChange = function (e) {
-      reduce = e.matches;
-      if (reduce) {
-        running = false;
-        render(0);
-      } else {
-        startLoop();
-      }
-    };
-    if (query.addEventListener) query.addEventListener('change', onChange);
-    else if (query.addListener) query.addListener(onChange);
-  }
+  motion.addEventListener('change', function (e) {
+    reduce = e.matches;
+    if (reduce) {
+      running = false;
+      render(0);
+    } else {
+      startLoop();
+    }
+  });
 })();

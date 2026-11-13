@@ -43,7 +43,7 @@
         </div>
 
         <div class="hero-actions">
-          <a class="button primary" href="#experience">
+          <a class="button" href="#experience">
             Explore my experience
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -72,7 +72,7 @@
           <span class="axis axis-top" aria-hidden="true">Y +</span>
           <span class="axis axis-bottom" aria-hidden="true">X +</span>
 
-          <div id="mn-mark" class="mn-mark" data-initials="MN">
+          <div id="mn-mark" class="mn-mark">
             <span class="mn-fallback">MN</span>
           </div>
 
@@ -110,7 +110,7 @@
     <section id="about" class="about-section wrap" aria-labelledby="about-title">
       <figure class="portrait">
         <img src="assets/profile.jpg" alt="Milad Nasrollahi">
-        <span>MILAD NASROLLAHI / TEHRAN</span>
+        <figcaption>MILAD NASROLLAHI / TEHRAN</figcaption>
       </figure>
 
       <div class="about-copy">
@@ -149,16 +149,15 @@
 
       <div class="experience-toolbar">
         <div class="filters" role="group" aria-label="Filter experience">
-          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">All<span>04</span></button>
-          <button type="button" class="filter-btn" data-filter="it-support-helpdesk" aria-pressed="false">IT Support &amp; Helpdesk<span>01</span></button>
-          <button type="button" class="filter-btn" data-filter="automation-vibe-code" aria-pressed="false">Automation &amp; Vibe Code<span>01</span></button>
-          <button type="button" class="filter-btn" data-filter="other" aria-pressed="false">Other<span>02</span></button>
+          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">All<span aria-hidden="true">04</span></button>
+          <button type="button" class="filter-btn" data-filter="it-support-helpdesk" aria-pressed="false">IT Support &amp; Helpdesk<span aria-hidden="true">01</span></button>
+          <button type="button" class="filter-btn" data-filter="automation-vibe-code" aria-pressed="false">Automation &amp; Vibe Code<span aria-hidden="true">01</span></button>
+          <button type="button" class="filter-btn" data-filter="other" aria-pressed="false">Other<span aria-hidden="true">02</span></button>
         </div>
         <p class="result-count" id="result-count" aria-live="polite">04 ENTRIES</p>
       </div>
 
-      <div class="experience-list">
-        <article class="experience-row" data-category="automation-vibe-code">
+      <article class="experience-row" data-category="automation-vibe-code">
           <div class="experience-meta">
             <span class="date">Nov 2026 – Now</span>
             <span class="category category-auto">Automation &amp; Vibe Code</span>
@@ -229,7 +228,6 @@
             </div>
           </div>
         </article>
-      </div>
     </section>
 
     <section id="practice" class="section-space wrap practice" aria-labelledby="practice-title">

@@ -36,7 +36,6 @@ body {
 }
 
 h1, h2, h3, p, figure { margin: 0; }
-ul { margin: 0; padding: 0; list-style: none; }
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; height: auto; }
 button {
@@ -47,8 +46,7 @@ button {
 }
 
 button:focus-visible,
-a:focus-visible,
-summary:focus-visible {
+a:focus-visible {
   outline: 2px solid var(--lime);
   outline-offset: 5px;
 }
@@ -67,6 +65,7 @@ summary:focus-visible {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 1.6px;
+  color: var(--muted);
 }
 
 h2 {
@@ -163,11 +162,9 @@ h2 {
   transition: background .25s, color .25s, border-color .25s;
 }
 .nav-cv:hover { background: var(--lime); border-color: var(--lime); color: #111310; }
-.nav-cv svg { flex-shrink: 0; }
 /* --- hero --------------------------------------------------------------- */
 
 .hero {
-  position: relative;
   padding-top: 65px;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
@@ -212,15 +209,13 @@ h2 {
   gap: 24px;
   padding: 15px 19px;
   border-radius: 4px;
-  font-size: 12px;
-}
-.primary {
   background: var(--lime);
   color: #1d2712;
+  font-size: 12px;
   font-weight: 600;
   transition: background .25s, transform .25s;
 }
-.primary:hover { background: #e1ffb9; transform: translateY(-2px); }
+.button:hover { background: #e1ffb9; transform: translateY(-2px); }
 
 .text-link {
   display: flex;
@@ -246,7 +241,6 @@ h2 {
 /* experiment panel */
 
 .experiment {
-  position: relative;
   align-self: start;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -416,15 +410,12 @@ h2 {
 }
 
 .portrait {
-  position: relative;
-  align-self: start;
   padding: 12px;
   border: 1px solid var(--line);
   background: #1d2119;
   transform: rotate(-2deg);
 }
 .portrait img {
-  display: block;
   width: 100%;
   aspect-ratio: 1 / 1.06;
   object-fit: cover;
@@ -432,7 +423,7 @@ h2 {
   transition: filter .4s;
 }
 .portrait:hover img { filter: grayscale(0); }
-.portrait > span {
+.portrait > figcaption {
   display: block;
   padding: 15px 2px 3px;
   font-family: var(--font-mono);
@@ -441,7 +432,7 @@ h2 {
   color: var(--muted);
 }
 
-.about-copy .eyebrow { margin-bottom: 24px; color: var(--muted); }
+.about-copy .eyebrow { margin-bottom: 24px; }
 .about-copy > p {
   margin-top: 25px;
   max-width: 630px;
@@ -477,7 +468,7 @@ h2 {
   grid-template-columns: 1.3fr 1fr;
   gap: 22px;
 }
-.section-heading .eyebrow { grid-column: 1 / -1; color: var(--muted); }
+.section-heading .eyebrow { grid-column: 1 / -1; }
 .section-heading > p:last-child {
   align-self: end;
   justify-self: end;
@@ -500,7 +491,7 @@ h2 {
 }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; }
-.filters .filter-btn {
+.filter-btn {
   padding: 10px 15px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -509,13 +500,13 @@ h2 {
   font-size: 11px;
   transition: color .25s, background .25s, border-color .25s;
 }
-.filters .filter-btn:hover { color: var(--text); border-color: #555c4b; }
-.filters .filter-btn[aria-pressed="true"] {
+.filter-btn:hover { color: var(--text); border-color: #555c4b; }
+.filter-btn[aria-pressed="true"] {
   background: var(--lime);
   border-color: var(--lime);
   color: #1b2214;
 }
-.filters .filter-btn span {
+.filter-btn span {
   margin-left: 10px;
   font-family: var(--font-mono);
   font-size: 9px;
@@ -525,7 +516,6 @@ h2 {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--muted);
-  white-space: nowrap;
 }
 
 .experience-row {
@@ -650,7 +640,7 @@ h2 {
   padding-bottom: 65px;
   border-top: 1px solid var(--line);
 }
-.contact-section > .eyebrow { margin-bottom: 25px; color: var(--muted); }
+.contact-section > .eyebrow { margin-bottom: 25px; }
 
 .contact-section h2 {
   font-size: clamp(58px, 7.4vw, 100px);
@@ -671,7 +661,7 @@ h2 {
   gap: 30px;
   margin-top: 40px;
 }
-.contact-bottom > div > p {
+.contact-bottom p {
   margin-bottom: 18px;
   font-size: 13px;
   color: var(--muted);
@@ -744,7 +734,7 @@ h2 {
   color: var(--muted);
 }
 .site-footer > a:hover { color: var(--lime); }
-.footer-brand { display: flex; align-items: center; gap: 10px; text-align: left; }
+.footer-brand { display: flex; align-items: center; gap: 10px; }
 .footer-brand .wordmark-initials { font-size: 14px; letter-spacing: -1px; color: var(--text); }
 /* --- responsive --------------------------------------------------------- */
 
@@ -810,7 +800,7 @@ h2 {
 
   .experience-toolbar { align-items: flex-start; }
   .filters { gap: 6px; }
-  .filters .filter-btn { padding: 9px 11px; font-size: 10px; }
+  .filter-btn { padding: 9px 11px; font-size: 10px; }
   .result-count { display: none; }
 
   .experience-row { grid-template-columns: 1fr; gap: 16px; padding: 25px 0; }
