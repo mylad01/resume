@@ -46,6 +46,9 @@ check "no vague status"   bash -c '! grep -qF "ALWAYS LEARNING" index.html'
 check "hero label"        bash -c 'grep -qE "01 / (IT SUPPORT|OPEN TO)" index.html'
 check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
 check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
+check "print page size"   has '@page { size: A4' css/style.css
+check "print block"       has '@media print' css/style.css
+check "print parses"      node -e "const fs=require('fs');const css=fs.readFileSync('css/style.css','utf8');const open=(css.match(/{/g)||[]).length,close=(css.match(/}/g)||[]).length;process.exit(open===close?0:1)"
 
 # --- content fidelity --------------------------------------------------------
 strings=$(cat <<'EOF'

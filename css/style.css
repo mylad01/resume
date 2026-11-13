@@ -845,3 +845,62 @@ h2 {
     transition: none !important;
   }
 }
+
+/* --- print ------------------------------------------------------------- */
+
+@page { size: A4; margin: 14mm 16mm; }
+
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: #fff !important; color: #20271b; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+
+  .scroll-progress, .skip-link, .experiment, .discipline-strip, .hero-actions,
+  .hero-bottom, .navigation nav, .nav-cv, .copy-button, .copy-feedback,
+  .experience-toolbar, .site-footer > a { display: none !important; }
+
+  .navigation {
+    position: static;
+    height: auto;
+    padding: 0 0 4mm;
+    border-bottom: 1px solid #879675;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wordmark-initials { color: #20271b; font-size: 20pt; }
+  .wordmark-caption, .eyebrow, .hero-footnote, .date, .company, .tool-list,
+  .tags span, .about-facts h3, .card-top span { color: #526242 !important; }
+
+  .hero { display: block; padding-top: 6mm; }
+  .hero h1 { margin: 4mm 0 3mm; font-size: 26pt; letter-spacing: -1pt; line-height: 1.1; }
+  .intro p, .about-copy > p, .experience-body > p { font-size: 9.5pt; line-height: 1.55; color: #333a2e; }
+
+  .section-space { padding-top: 7mm; padding-bottom: 0; }
+  .section-heading { grid-template-columns: 1fr; gap: 2mm; }
+  .section-heading > p:last-child { justify-self: start; max-width: none; }
+
+  .experience-row { grid-template-columns: 32mm 1fr; gap: 6mm; padding: 4mm 0; break-inside: avoid; }
+  .experience-meta { gap: 2mm; padding-top: 0; }
+  .job-heading h3 { font-size: 12pt; }
+  .tags span { border-color: #cbd1c4; }
+
+  .practice { padding-bottom: 0; }
+  .practice-grid { grid-template-columns: repeat(3, 1fr); gap: 5mm; margin-top: 5mm; }
+  .practice-card { border-color: #cbd1c4; background: none; padding: 4mm; }
+  .practice-card h3 { font-size: 11pt; }
+  .card-top { margin-bottom: 4mm; }
+
+  .contact-section { border-top: 1px solid #879675; padding-top: 6mm; padding-bottom: 0; }
+  .contact-section h2 { font-size: 22pt; letter-spacing: -1pt; }
+  .contact-section h2 svg { display: none; }
+  .email-link { border-color: #879675; font-size: 12pt; }
+  .contact-bottom { margin-top: 4mm; }
+
+  .about-section { display: block; padding: 6mm 0; }
+  .portrait { width: 38mm; margin-bottom: 4mm; transform: none; }
+  .portrait img { filter: grayscale(1); aspect-ratio: 1 / 1.06; }
+
+  a[href^="http"]::after, a[href^="mailto"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: #526242; }
+  .site-footer { border-top: 1px solid #879675; padding-block: 3mm; }
+}
