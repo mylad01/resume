@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Nasrollahi;Milad;;;
+FN:Milad Nasrollahi
+TITLE:IT Support Specialist
+TEL;TYPE=CELL:+989023955445
+EMAIL;TYPE=WORK:miladnasrollahi.mn@gmail.com
+ADR;TYPE=WORK:;;Tehran;;;Iran
+NOTE:IT support · studio systems · Python automation
+END:VCARD

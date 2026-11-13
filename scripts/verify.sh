@@ -49,6 +49,11 @@ check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 check "print page size"   has '@page { size: A4' css/style.css
 check "print block"       has '@media print' css/style.css
 check "print parses"      node -e "const fs=require('fs');const css=fs.readFileSync('css/style.css','utf8');const open=(css.match(/{/g)||[]).length,close=(css.match(/}/g)||[]).length;process.exit(open===close?0:1)"
+check "vcard"             has 'BEGIN:VCARD' assets/milad-nasrollahi.vcf
+check "vcard crlf"        python -c "import sys; d=open('assets/milad-nasrollahi.vcf','rb').read(); sys.exit(0 if d.count(bytes([13,10])) >= 10 else 1)"
+
+check "vcard linked"      has 'assets/milad-nasrollahi.vcf' index.html
+check "vcard no placeholder url" bash -c '! grep -q "^URL:" assets/milad-nasrollahi.vcf'
 
 # --- content fidelity --------------------------------------------------------
 strings=$(cat <<'EOF'
