@@ -23,75 +23,154 @@
   if (fallback) fallback.style.display = 'none';
   container.appendChild(canvas);
 
-  var pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+  // Extruded monogram: the glyph is drawn once per depth slice, each slice
+  // offset by the current rotation, which reads as a solid extruded form.
+  var SLICES = 26;
+  var DEPTH = 1.15;
+  var FONT = '400 96px Arial, Helvetica, sans-serif';
+  var LIME = '#d2f89b';
+  var FACE = [239, 239, 234];
+  var EDGE = [88, 96, 76];
 
-  container.addEventListener('mousemove', function (e) {
-    var box = container.getBoundingClientRect();
-    pointer.tx = ((e.clientX - box.left) / box.width - 0.5) * 2;
-    pointer.ty = ((e.clientY - box.top) / box.height - 0.5) * 2;
-  });
-  container.addEventListener('mouseleave', function () {
-    pointer.tx = 0;
-    pointer.ty = 0;
-  });
+  var shades = [];
+  for (var i = 0; i <= SLICES; i++) {
+    var k = i / SLICES;
+    shades.push('rgb(' +
+      Math.round(FACE[0] + (EDGE[0] - FACE[0]) * k) + ',' +
+      Math.round(FACE[1] + (EDGE[1] - FACE[1]) * k) + ',' +
+      Math.round(FACE[2] + (EDGE[2] - FACE[2]) * k) + ')');
+  }
+
+  var yaw = 0;
+  var pitch = 0;
+  var velYaw = 0;
+  var velPitch = 0;
+  var dragging = false;
+  var running = false;
+  var lastX = 0;
+  var lastY = 0;
+  var start = 0;
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function render(now) {
+    var seconds = ((now || 0) - start) / 1000;
+    var drift = reduce || dragging ? 0 : Math.sin(seconds * 0.55) * 0.14;
+    var y = yaw + drift;
+    var p = pitch;
+    var scaleX = Math.cos(y) * 0.9 + 0.1;
+    var scaleY = Math.cos(p) * 0.9 + 0.1;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(size / 2, size / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = FONT;
+
+    for (var i = SLICES; i >= 0; i--) {
+      ctx.save();
+      ctx.translate(Math.sin(y) * i * DEPTH, -Math.sin(p) * i * DEPTH * 0.7);
+      ctx.scale(scaleX, scaleY);
+      ctx.fillStyle = shades[i];
+      ctx.fillText('MN', 0, 0);
+      ctx.restore();
+    }
+
+    ctx.strokeStyle = LIME;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-50 * scaleX, 46 * scaleY);
+    ctx.lineTo(50 * scaleX, 46 * scaleY);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function frame(now) {
+    if (!running) return;
+    if (!start) start = now;
+    if (!dragging) {
+      yaw += velYaw;
+      pitch = clamp(pitch + velPitch, -0.45, 0.45);
+      velYaw *= 0.95;
+      velPitch *= 0.95;
+    }
+    render(now);
+    requestAnimationFrame(frame);
+  }
+
+  function startLoop() {
+    if (running) return;
+    running = true;
+    requestAnimationFrame(frame);
+  }
+
+  function onPointerDown(e) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    velYaw = 0;
+    velPitch = 0;
+    canvas.style.cursor = 'grabbing';
+    if (canvas.setPointerCapture && e.pointerId !== undefined) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    var dx = e.clientX - lastX;
+    var dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    yaw += dx * 0.012;
+    pitch = clamp(pitch + dy * 0.006, -0.45, 0.45);
+    velYaw = dx * 0.012 * 0.5;
+    velPitch = dy * 0.006 * 0.5;
+    // Repaint straight away so the drag tracks the pointer even if the
+    // animation loop is throttled (background tab, low-power mode).
+    render(0);
+  }
+
+  function onPointerUp() {
+    if (!dragging) return;
+    dragging = false;
+    canvas.style.cursor = 'grab';
+  }
+
+  canvas.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
 
   var reset = document.getElementById('mark-reset');
   if (reset) {
     reset.addEventListener('click', function () {
-      pointer.tx = 0;
-      pointer.ty = 0;
-      pointer.x = 0;
-      pointer.y = 0;
-      if (reduce) draw(0);
+      yaw = 0;
+      pitch = 0;
+      velYaw = 0;
+      velPitch = 0;
+      render(0);
     });
   }
 
-  var t = 0;
-
-  function draw(time) {
-    t = (time || 0) * 0.001;
-    pointer.x += (pointer.tx - pointer.x) * 0.05;
-    pointer.y += (pointer.ty - pointer.y) * 0.05;
-
-    ctx.clearRect(0, 0, size, size);
-
-    var cx = size / 2 + pointer.x * 6;
-    var cy = size / 2 + pointer.y * 6;
-    var lift = reduce ? 0 : Math.sin(t * 0.8) * 2;
-
-    ctx.save();
-    ctx.translate(cx, cy);
-
-    // monogram
-    ctx.fillStyle = '#efefea';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '400 104px Arial, Helvetica, sans-serif';
-    ctx.fillText('MN', 0, lift - 6);
-
-    // lime rule under the mark
-    ctx.strokeStyle = '#d2f89b';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-56, 52 + lift * 0.4);
-    ctx.lineTo(56, 52 + lift * 0.4);
-    ctx.stroke();
-
-    ctx.restore();
-
-    if (!reduce) requestAnimationFrame(draw);
-  }
-
-  if (reduce) draw(0);
-  else requestAnimationFrame(draw);
+  render(0);
+  if (!reduce) startLoop();
 
   if (query) {
-    var handler = function (e) {
+    var onChange = function (e) {
       reduce = e.matches;
-      if (reduce) draw(0);
-      else requestAnimationFrame(draw);
+      if (reduce) {
+        running = false;
+        render(0);
+      } else {
+        startLoop();
+      }
     };
-    if (query.addEventListener) query.addEventListener('change', handler);
-    else if (query.addListener) query.addListener(handler);
+    if (query.addEventListener) query.addEventListener('change', onChange);
+    else if (query.addListener) query.addListener(onChange);
   }
 })();
