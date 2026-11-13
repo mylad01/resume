@@ -77,6 +77,16 @@ done <<< "$strings"
 chips=$(python -c "import re; s=open('index.html',encoding='utf-8').read(); b=re.findall(r'<div class=\"tags\">(.*?)</div>', s, re.S); print(sum(len(re.findall('<span>', x)) for x in b))")
 [ "$chips" -eq 17 ] && printf 'PASS  tag chips (17)\n' || { printf 'FAIL  tag chips (%s)\n' "$chips"; fail=1; }
 
+# --- metadata ----------------------------------------------------------------
+check "description"       has 'name="description"' index.html
+check "theme colour"      has 'name="theme-color" content="#111310"' index.html
+check "svg favicon"       has 'assets/favicon.svg' index.html
+check "og image"          has 'property="og:image"' index.html
+check "og image size"     has 'property="og:image:height" content="630"' index.html
+check "twitter card"      has 'name="twitter:card"' index.html
+check "json-ld person"    has '"@type": "Person"' index.html
+check "json-ld valid"     python -c "import json,re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'<script type=\"application/ld\+json\">(.*?)</script>', s, re.S).group(1); d=json.loads(b); sys.exit(0 if d['name']=='Milad Nasrollahi' else 1)"
+
 # --- leftovers ---------------------------------------------------------------
 check "no old palette"    bash -c '! grep -qE "#0b0b0d|#141418|#e6e6e6" css/style.css'
 check "no old classes"    bash -c '! grep -qE "site-header|timeline-entry|photo-slot" index.html'
