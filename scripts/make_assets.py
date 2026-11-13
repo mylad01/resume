@@ -63,6 +63,16 @@ def touch_icon(size: int = 180) -> None:
     print("wrote assets/apple-touch-icon.png %dx%d" % (size, size))
 
 
+def portrait() -> None:
+    source = Image.open(ASSETS / "profile.jpg").convert("RGB")
+    width = 776
+    height = round(source.height * width / source.width)
+    resized = source.resize((width, height), Image.LANCZOS)
+    resized.save(ASSETS / "profile.webp", "WEBP", quality=82, method=6)
+    print("wrote assets/profile.webp %dx%d" % (width, height))
+
+
 if __name__ == "__main__":
     og_card()
     touch_icon()
+    portrait()

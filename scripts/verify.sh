@@ -39,6 +39,9 @@ for cat in automation-vibe-code it-support-helpdesk other; do
 done
 check "filter ctx"        has 'resultCount.textContent' js/main.js
 check "hidden rule"       has '.experience-row[hidden]' css/style.css
+check "webp portrait"     has 'assets/profile.webp' index.html
+check "webp weight"       bash -c '[ "$(wc -c < assets/profile.webp)" -lt 120000 ]'
+check "image dimensions"  has 'width="776"' index.html
 
 # --- content fidelity --------------------------------------------------------
 strings=$(cat <<'EOF'
@@ -64,7 +67,7 @@ Reliable IT Support
 Studio &amp; Pipeline Support
 Automation &amp; Vibe Coding
 assets/Milad-Nasrollahi-CV.pdf
-assets/profile.jpg
+assets/profile.webp
 EOF
 )
 missing=0
