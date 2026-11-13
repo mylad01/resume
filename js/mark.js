@@ -26,20 +26,32 @@
   // The mark is the glyph drawn once per depth slice, each slice offset along
   // a rotation-swinging extrusion vector so it reads as a solid form.
   var SLICES = 30;
-  var DEPTH = 1.2;
+  var DEPTH = 0.65;
   var LIMIT = 0.45;
-  var FONT = '400 88px Arial, Helvetica, sans-serif';
+  var FONT = '700 80px Arial, Helvetica, sans-serif';
+  var GAP = 4;
   var LIME = getComputedStyle(document.documentElement).getPropertyValue('--lime').trim() || '#d2f89b';
-  var FACE = [239, 239, 234];
-  var EDGE = [88, 96, 76];
+  var FACE = 'rgb(239, 239, 234)';
+  var SIDE = 'rgb(126, 134, 112)';
 
-  var shades = [];
-  for (var i = 0; i <= SLICES; i++) {
-    var k = i / SLICES;
-    shades.push('rgb(' +
-      Math.round(FACE[0] + (EDGE[0] - FACE[0]) * k) + ',' +
-      Math.round(FACE[1] + (EDGE[1] - FACE[1]) * k) + ',' +
-      Math.round(FACE[2] + (EDGE[2] - FACE[2]) * k) + ')');
+  // Stamped per glyph: drawing 'MN' as one string let the extrusion close the
+  // gap between the letters, so the pair read as a single wedge.
+  var glyphs = (function () {
+    ctx.font = FONT;
+    var wm = ctx.measureText('M').width;
+    var wn = ctx.measureText('N').width;
+    var total = wm + wn + GAP;
+    return [
+      { ch: 'M', x: -total / 2 + wm / 2 },
+      { ch: 'N', x: -total / 2 + wm + GAP + wn / 2 }
+    ];
+  })();
+
+  function stamp(dx, dy, fill) {
+    ctx.fillStyle = fill;
+    for (var g = 0; g < glyphs.length; g++) {
+      ctx.fillText(glyphs[g].ch, glyphs[g].x + dx, dy);
+    }
   }
 
   var yaw = 0;
@@ -68,10 +80,12 @@
     ctx.textBaseline = 'middle';
     ctx.font = FONT;
 
-    for (var slice = SLICES; slice >= 0; slice--) {
-      ctx.fillStyle = shades[slice];
-      ctx.fillText('MN', ex * slice * DEPTH, ey * slice * DEPTH);
+    // One flat side colour for the whole body, then the front face on top:
+    // a per-slice ramp banded the counters into separate slats.
+    for (var slice = SLICES; slice >= 1; slice--) {
+      stamp(ex * slice * DEPTH, ey * slice * DEPTH, SIDE);
     }
+    stamp(0, 0, FACE);
 
     ctx.strokeStyle = LIME;
     ctx.beginPath();
