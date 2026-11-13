@@ -7,130 +7,314 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+  <header class="navigation">
+    <a class="wordmark" href="#main" aria-label="Milad Nasrollahi — back to top">
+      <span class="wordmark-initials">MN</span>
+      <span class="wordmark-caption">IT SUPPORT<br>SYSTEMS / AUTOMATION</span>
+    </a>
+
+    <nav aria-label="Primary">
       <a href="#experience">Experience</a>
       <a href="#practice">Practice</a>
       <a href="#contact">Contact</a>
     </nav>
+
+    <a class="nav-cv" href="assets/Milad-Nasrollahi-CV.pdf" download aria-label="Download résumé PDF">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>
+      </svg>
+      <span>Résumé PDF</span>
+    </a>
   </header>
 
-  <main>
-    <section id="hero" class="hero" aria-label="Introduction">
-      <div class="hero-content">
-        <p class="intro-line">MILAD NASROLLAHI / SYSTEM ADMINISTRATOR &amp; VIBE CODER</p>
-        <h1 class="headline">Where IT support meets intelligent automation.</h1>
-      </div>
-      <div class="hero-mark" aria-hidden="true">
-        <div id="mn-mark" class="mn-mark" data-initials="MN">
-          <span class="mn-fallback">MN</span>
-        </div>
-      </div>
-    </section>
+  <main id="main">
+    <section id="hero" class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow hero-eyebrow"><span class="status-dot" aria-hidden="true"></span>01 / ALWAYS LEARNING</p>
 
-    <section id="about" class="section about">
-      <h2>About</h2>
-      <div class="about-layout">
-        <div class="about-text">
-          <p class="bio">I’m a Technical Specialist and IT Support Administrator based in Tehran, focused on keeping studio and IT environments stable and people productive. My work spans help desk operations, VFX pipeline support, and building practical automations with Python, LLM APIs, and local model workflows. I learn fast, adapt to new tools, and enjoy turning messy problems into clean, reliable systems.</p>
-          <div class="about-details">
-            <p><strong>Languages:</strong> English · Farsi (both)</p>
-            <p><strong>Outside the work:</strong> Technology · Science · Gaming · Inventing new things</p>
+        <h1 id="hero-title">Where IT support meets intelligent automation.</h1>
+
+        <div class="intro">
+          <span class="intro-rule" aria-hidden="true"></span>
+          <p>I’m a Technical Specialist and IT Support Administrator based in Tehran, focused on keeping studio and IT environments stable and people productive. My work spans help desk operations, VFX pipeline support, and building practical automations with Python, LLM APIs, and local model workflows.</p>
+        </div>
+
+        <div class="hero-actions">
+          <a class="button primary" href="#experience">
+            Explore my experience
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </a>
+          <a class="text-link" href="mailto:miladnasrollahi.mn@gmail.com">
+            Let’s connect
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M7 17 17 7M8 7h9v9"/>
+            </svg>
+          </a>
+        </div>
+
+        <p class="hero-footnote">TEHRAN, IRAN <span aria-hidden="true">·</span> IT, STUDIO PIPELINES &amp; AUTOMATION</p>
+      </div>
+
+      <div class="experiment">
+        <div class="experiment-top">
+          <span>MARK 001 / MN IDENTITY</span>
+          <span class="live-label"><i aria-hidden="true"></i>LIVE</span>
+        </div>
+
+        <div class="sculpture">
+          <div class="orbit-ring" aria-hidden="true"></div>
+          <div class="orbit-ring ring-two" aria-hidden="true"></div>
+          <span class="axis axis-top" aria-hidden="true">Y +</span>
+          <span class="axis axis-bottom" aria-hidden="true">X +</span>
+
+          <div id="mn-mark" class="mn-mark" data-initials="MN">
+            <span class="mn-fallback">MN</span>
+          </div>
+
+          <div class="sculpture-caption">
+            <span>MARK 01</span>
+            <strong>Monogram</strong>
           </div>
         </div>
-        <div class="photo-slot">
-          <img src="assets/profile.jpg" alt="Photo of Milad Nasrollahi">
+
+        <div class="experiment-controls">
+          <span class="experiment-hint">MOVE TO TILT</span>
+          <button type="button" class="icon-button" id="mark-reset" aria-label="Reset the monogram position">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-bottom">
+        <span>IT SUPPORT <span aria-hidden="true">·</span> STUDIO PIPELINE <span aria-hidden="true">·</span> AUTOMATION</span>
+        <a href="#about">SCROLL TO DISCOVER <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>
+
+    <div class="discipline-strip" aria-label="Disciplines">
+      <span>HELP DESK</span><i aria-hidden="true">✳</i>
+      <span>VFX PIPELINE</span><i aria-hidden="true">✳</i>
+      <span>AUTOMATION</span><i aria-hidden="true">✳</i>
+      <span>PYTHON</span><i aria-hidden="true">✳</i>
+      <span>LOCAL LLMs</span><i aria-hidden="true">✳</i>
+      <span>WINDOWS SYSTEMS</span>
+    </div>
+
+    <section id="about" class="about-section wrap" aria-labelledby="about-title">
+      <figure class="portrait">
+        <img src="assets/profile.jpg" alt="Milad Nasrollahi">
+        <span>MILAD NASROLLAHI / TEHRAN</span>
+      </figure>
+
+      <div class="about-copy">
+        <p class="eyebrow">BETWEEN PEOPLE &amp; SYSTEMS</p>
+        <h2 id="about-title">Messy problems.<br>Clean systems.</h2>
+
+        <p>I’m a Technical Specialist and IT Support Administrator based in Tehran, focused on keeping studio and IT environments stable and people productive. My work spans help desk operations, VFX pipeline support, and building practical automations with Python, LLM APIs, and local model workflows. I learn fast, adapt to new tools, and enjoy turning messy problems into clean, reliable systems.</p>
+
+        <div class="about-facts">
+          <div>
+            <h3>LANGUAGES</h3>
+            <p>English · Farsi <span>(both)</span></p>
+          </div>
+          <div>
+            <h3>OUTSIDE THE WORK</h3>
+            <p>Technology · Science · Gaming · Inventing new things</p>
+          </div>
+          <div>
+            <h3>BASED IN</h3>
+            <p>Tehran, Iran</p>
+          </div>
+          <div>
+            <h3>FOCUS</h3>
+            <p>Help desk · Studio systems · Python automation</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="experience" class="section experience">
-      <h2>Experience</h2>
-      <p class="section-intro">The journey so far — support, systems, and building smarter workflows.</p>
-      <div class="filters" role="group" aria-label="Filter experience">
-        <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
-        <button type="button" class="filter-btn" data-filter="it-support-helpdesk" aria-pressed="false">IT Support &amp; Helpdesk</button>
-        <button type="button" class="filter-btn" data-filter="automation-vibe-code" aria-pressed="false">Automation &amp; Vibe Code</button>
-        <button type="button" class="filter-btn" data-filter="other" aria-pressed="false">Other</button>
+    <section id="experience" class="section-space wrap" aria-labelledby="experience-title">
+      <div class="section-heading">
+        <p class="eyebrow">02 / THE JOURNEY</p>
+        <h2 id="experience-title">A path through support and systems.</h2>
+        <p>The journey so far — support, systems, and building smarter workflows.</p>
       </div>
-      <div class="timeline">
-        <article class="timeline-entry" data-category="automation-vibe-code">
-          <p class="entry-meta"><span class="entry-date">Nov 2026 – Now</span> · <span class="entry-category">Automation &amp; Vibe Code</span></p>
-          <h3>Automation &amp; Python Projects (Independent)</h3>
-          <p class="entry-place">Freelancing</p>
-          <p class="entry-desc">Building practical automations and support tooling for VFX/studio workflows—combining Python scripts, CLI/Git practices, and LLM/local model integrations to streamline repetitive tasks.</p>
-          <ul class="tags">
-            <li>Python</li><li>LLM APIs / Local LLMs</li><li>VFX Pipeline</li><li>Windows &amp; CLI</li><li>Git</li>
-          </ul>
+
+      <div class="experience-toolbar">
+        <div class="filters" role="group" aria-label="Filter experience">
+          <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">All<span>04</span></button>
+          <button type="button" class="filter-btn" data-filter="it-support-helpdesk" aria-pressed="false">IT Support &amp; Helpdesk<span>01</span></button>
+          <button type="button" class="filter-btn" data-filter="automation-vibe-code" aria-pressed="false">Automation &amp; Vibe Code<span>01</span></button>
+          <button type="button" class="filter-btn" data-filter="other" aria-pressed="false">Other<span>02</span></button>
+        </div>
+        <p class="result-count" id="result-count" aria-live="polite">04 ENTRIES</p>
+      </div>
+
+      <div class="experience-list">
+        <article class="experience-row" data-category="automation-vibe-code">
+          <div class="experience-meta">
+            <span class="date">Nov 2026 – Now</span>
+            <span class="category category-auto">Automation &amp; Vibe Code</span>
+          </div>
+          <div class="experience-body">
+            <div class="job-heading">
+              <h3>Automation &amp; Python Projects (Independent)</h3>
+              <span class="job-arrow" aria-hidden="true">↗</span>
+            </div>
+            <p class="company">Freelancing</p>
+            <p>Building practical automations and support tooling for VFX/studio workflows—combining Python scripts, CLI/Git practices, and LLM/local model integrations to streamline repetitive tasks.</p>
+            <div class="tags">
+              <span>Python</span><span>LLM APIs / Local LLMs</span><span>VFX Pipeline</span><span>Windows &amp; CLI</span><span>Git</span>
+            </div>
+          </div>
         </article>
-        <article class="timeline-entry" data-category="it-support-helpdesk">
-          <p class="entry-meta"><span class="entry-date">Jun 2023 – Nov 2026</span> · <span class="entry-category">IT Support &amp; Helpdesk</span></p>
-          <h3>Computer Technician / IT Support</h3>
-          <p class="entry-place">Digital Cinema City</p>
-          <p class="entry-desc">Delivered helpdesk and on-site technical support at Digital Cinema City, resolving hardware/software issues and supporting users and systems in a fast-paced production setting.</p>
-          <ul class="tags">
-            <li>Technical Support</li><li>Hardware/Software</li><li>User Support</li><li>Systems</li><li>Cinema/Studio</li>
-          </ul>
+
+        <article class="experience-row" data-category="it-support-helpdesk">
+          <div class="experience-meta">
+            <span class="date">Jun 2023 – Nov 2026</span>
+            <span class="category category-support">IT Support &amp; Helpdesk</span>
+          </div>
+          <div class="experience-body">
+            <div class="job-heading">
+              <h3>Computer Technician / IT Support</h3>
+              <span class="job-arrow" aria-hidden="true">↗</span>
+            </div>
+            <p class="company">Digital Cinema City</p>
+            <p>Delivered helpdesk and on-site technical support at Digital Cinema City, resolving hardware/software issues and supporting users and systems in a fast-paced production setting.</p>
+            <div class="tags">
+              <span>Technical Support</span><span>Hardware/Software</span><span>User Support</span><span>Systems</span><span>Cinema/Studio</span>
+            </div>
+          </div>
         </article>
-        <article class="timeline-entry" data-category="other">
-          <p class="entry-meta"><span class="entry-date">Apr 2022 – Jun 2023</span> · <span class="entry-category">Other</span></p>
-          <h3>Insurance Clerk</h3>
-          <p class="entry-place">Bama Official Insurance Brokerage</p>
-          <p class="entry-desc">Supported brokerage operations through organized clerical work, customer assistance, and accurate record-keeping in a professional office setting.</p>
-          <ul class="tags">
-            <li>Clerical Support</li><li>Client Assistance</li><li>Detail-Oriented</li><li>Records</li>
-          </ul>
+
+        <article class="experience-row" data-category="other">
+          <div class="experience-meta">
+            <span class="date">Apr 2022 – Jun 2023</span>
+            <span class="category category-other">Other</span>
+          </div>
+          <div class="experience-body">
+            <div class="job-heading">
+              <h3>Insurance Clerk</h3>
+              <span class="job-arrow" aria-hidden="true">↗</span>
+            </div>
+            <p class="company">Bama Official Insurance Brokerage</p>
+            <p>Supported brokerage operations through organized clerical work, customer assistance, and accurate record-keeping in a professional office setting.</p>
+            <div class="tags">
+              <span>Clerical Support</span><span>Client Assistance</span><span>Detail-Oriented</span><span>Records</span>
+            </div>
+          </div>
         </article>
-        <article class="timeline-entry" data-category="other">
-          <p class="entry-meta"><span class="entry-date">2022 – Now</span> · <span class="entry-category">Other</span></p>
-          <h3>Associate Degree in Insurance</h3>
-          <p class="entry-place">Islamic Azad University (North Tehran Branch)</p>
-          <p class="entry-desc">Ongoing associate degree studies in Insurance, building a foundation in the field alongside hands-on technical and professional experience.</p>
-          <ul class="tags">
-            <li>Insurance Studies</li><li>Associate Degree</li><li>In Progress</li>
-          </ul>
+
+        <article class="experience-row" data-category="other">
+          <div class="experience-meta">
+            <span class="date">2022 – Now</span>
+            <span class="category category-other">Other</span>
+          </div>
+          <div class="experience-body">
+            <div class="job-heading">
+              <h3>Associate Degree in Insurance</h3>
+              <span class="job-arrow" aria-hidden="true">↗</span>
+            </div>
+            <p class="company">Islamic Azad University (North Tehran Branch)</p>
+            <p>Ongoing associate degree studies in Insurance, building a foundation in the field alongside hands-on technical and professional experience.</p>
+            <div class="tags">
+              <span>Insurance Studies</span><span>Associate Degree</span><span>In Progress</span>
+            </div>
+          </div>
         </article>
       </div>
     </section>
 
-    <section id="practice" class="section practice">
-      <h2>Practice</h2>
-      <p class="section-intro">Key disciplines I bring to my work.</p>
+    <section id="practice" class="section-space wrap practice" aria-labelledby="practice-title">
+      <div class="section-heading">
+        <p class="eyebrow">03 / THE PRACTICE</p>
+        <h2 id="practice-title">Three ways I keep<br>the work running.</h2>
+        <p>Key disciplines I bring to my work.</p>
+      </div>
+
       <div class="practice-grid">
         <article class="practice-card">
+          <div class="card-top">
+            <span>01</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/>
+            </svg>
+          </div>
           <h3>Reliable IT Support</h3>
           <p>Hands-on troubleshooting and helpdesk support across hardware, software, and Windows environments—keeping systems stable and people productive.</p>
+          <p class="tool-list">WINDOWS / HARDWARE / SOFTWARE / END-USER SUPPORT</p>
         </article>
+
         <article class="practice-card">
+          <div class="card-top">
+            <span>02</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h10"/>
+            </svg>
+          </div>
           <h3>Studio &amp; Pipeline Support</h3>
           <p>Support for VFX and studio workflows, from workstation and software environments to render-farm and pipeline needs in production settings.</p>
+          <p class="tool-list">WORKSTATIONS / RENDER FARM / VFX PIPELINE / PRODUCTION</p>
         </article>
+
         <article class="practice-card">
+          <div class="card-top">
+            <span>03</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="m8 6-5 6 5 6M16 6l5 6-5 6"/>
+            </svg>
+          </div>
           <h3>Automation &amp; Vibe Coding</h3>
           <p>Building useful automations with Python, CLI/Git, and LLM or local-model workflows to reduce repetitive work and make processes smarter.</p>
+          <p class="tool-list">PYTHON / LLM APIS / LOCAL MODELS / CLI / GIT</p>
         </article>
       </div>
     </section>
 
-    <section id="contact" class="section contact">
-      <h2>Contact</h2>
-      <p class="section-intro">Want to know more about my skills or work together? Reach out.</p>
-      <div class="contact-details">
-        <p><strong>Location:</strong> Tehran, Iran</p>
-        <p><strong>Email:</strong> <a href="mailto:miladnasrollahi.mn@gmail.com">miladnasrollahi.mn@gmail.com</a>
-          <button type="button" id="copy-email" class="copy-btn" data-email="miladnasrollahi.mn@gmail.com">Copy email</button>
+    <section id="contact" class="contact-section wrap" aria-labelledby="contact-title">
+      <p class="eyebrow">04 / START A CONVERSATION</p>
+
+      <h2 id="contact-title">Start a conversation.
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+          <path d="M7 17 17 7M8 7h9v9"/>
+        </svg>
+      </h2>
+
+      <div class="contact-bottom">
+        <div>
+          <p>Want to know more about my skills or work together? Reach out.</p>
+          <div class="email-row">
+            <a class="email-link" href="mailto:miladnasrollahi.mn@gmail.com">miladnasrollahi.mn@gmail.com</a>
+            <button type="button" id="copy-email" class="copy-button" data-email="miladnasrollahi.mn@gmail.com">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="1"/><path d="M15 5H5v10"/>
+              </svg>
+              COPY
+            </button>
+          </div>
           <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
-        </p>
-        <p><strong>Phone:</strong> <a href="tel:+989023955445">+98 902 395 5445</a></p>
+        </div>
+
+        <div class="contact-links">
+          <a href="tel:+989023955445">+98 902 395 5445 <span aria-hidden="true">↗</span></a>
+          <span>Tehran, Iran</span>
+          <a href="assets/Milad-Nasrollahi-CV.pdf" download>Download CV <span aria-hidden="true">↓</span></a>
+        </div>
       </div>
-      <p class="resume-download">
-        <a class="btn-download" href="assets/Milad-Nasrollahi-CV.pdf" download>Download CV</a>
-      </p>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>&copy; 2026 Milad Nasrollahi</p>
+  <footer class="site-footer wrap">
+    <span class="footer-brand"><span class="wordmark-initials">MN</span> SYSTEMS / SUPPORT / AUTOMATION</span>
+    <span>© 2026 MILAD NASROLLAHI</span>
+    <a href="#main">BACK TO TOP ↑</a>
   </footer>
 
   <script src="js/mark.js"></script>
