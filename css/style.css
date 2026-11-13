@@ -776,9 +776,8 @@ h2 {
 
   .navigation { height: 72px; padding: 0 20px; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .wordmark-initials { font-size: 25px; }
-  .navigation nav { gap: 16px; }
+  .navigation nav { gap: 14px; }
   .navigation nav a { font-size: 10px; }
-  .navigation nav a:first-child { display: none; }
   .nav-cv { padding: 9px; }
   .nav-cv span { display: none; }
 
@@ -825,7 +824,7 @@ h2 {
   .about-facts { gap: 18px; }
 
   .contact-section { padding-top: 45px; padding-bottom: 35px; }
-  .contact-section h2 { font-size: 60px; letter-spacing: -3px; }
+  .contact-section h2 { font-size: clamp(38px, 14.5vw, 60px); letter-spacing: -3px; }
   .contact-section h2 svg { width: 45px; height: 45px; margin-left: 10px; }
   .contact-bottom { flex-direction: column; gap: 30px; }
   .contact-links { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 25px; }
