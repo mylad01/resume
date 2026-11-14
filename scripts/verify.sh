@@ -46,6 +46,9 @@ check "webp weight"       bash -c '[ "$(wc -c < assets/profile.webp)" -lt 120000
 check "image dimensions"  has 'width="776"' index.html
 check "no vague status"   bash -c '! grep -qF "ALWAYS LEARNING" index.html'
 check "hero label"        bash -c 'grep -qE "01 / (IT SUPPORT|OPEN TO)" index.html'
+check "h1 is the name"    has '<h1 id="hero-title">Milad Nasrollahi</h1>' index.html
+check "slogan is the lede" has '<p class="lede">Where IT support meets intelligent automation.</p>' index.html
+check "single h1"         count_is '<h1' index.html 1
 check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
 check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 check "print page size"   has '@page { size: A4' css/style.css
