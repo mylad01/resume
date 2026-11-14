@@ -625,6 +625,7 @@ h2 {
 .tool-list {
   margin-top: 26px;
   padding-top: 19px;
+  min-height: calc(3.8em + 20px); /* two lines, plus the 19px padding and 1px rule (border-box) */
   border-top: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: 10px;

@@ -39,7 +39,7 @@ for cat in automation-vibe-code it-support-helpdesk other; do
 done
 check "filter ctx"        has 'resultCount.textContent' js/main.js
 check "hidden rule"       has '.experience-row[hidden]' css/style.css
-check "studio software"   has 'PHOTOSHOP / PREMIERE PRO' index.html
+check "studio software"   has 'WORKSTATIONS / RENDER FARM / PHOTOSHOP / PREMIERE PRO / VFX PIPELINE' index.html
 check "no unconfirmed"    bash -c '! grep -qE "After Effects|Microsoft Office|Linux" index.html'
 check "webp portrait"     has 'assets/profile.webp' index.html
 check "webp weight"       bash -c '[ "$(wc -c < assets/profile.webp)" -lt 120000 ]'
