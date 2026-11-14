@@ -99,6 +99,11 @@ check "svg favicon"       has 'assets/favicon.svg' index.html
 check "og image"          has 'property="og:image"' index.html
 check "og image size"     has 'property="og:image:height" content="630"' index.html
 check "twitter card"      has 'name="twitter:card"' index.html
+check "role in title"     has '<title>Milad Nasrollahi — IT Support &amp; Systems Specialist</title>' index.html
+check "role in og"        has 'property="og:title" content="Milad Nasrollahi — IT Support &amp; Systems Specialist"' index.html
+check "role in nav"       has 'IT SUPPORT<br>SYSTEMS SPECIALIST' index.html
+check "role in json-ld"   has '"jobTitle": "IT Support & Systems Specialist"' index.html
+check "old role gone"     bash -c '! grep -qF "Vibe Coder" index.html'
 check "json-ld person"    has '"@type": "Person"' index.html
 check "json-ld valid"     python -c "import json,re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'<script type=\"application/ld\+json\">(.*?)</script>', s, re.S).group(1); d=json.loads(b); sys.exit(0 if d['name']=='Milad Nasrollahi' else 1)"
 
