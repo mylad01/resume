@@ -34,7 +34,7 @@ check "breakpoints"       has 'max-width: 760px' css/style.css
 check "reduced motion"    has 'prefers-reduced-motion: reduce' css/style.css
 
 # --- filter wiring -----------------------------------------------------------
-for cat in automation-vibe-code it-support-helpdesk other; do
+for cat in automation it-support-helpdesk other; do
   check "rows for $cat" bash -c "grep -qF 'data-category=\"$cat\"' index.html"
 done
 check "filter ctx"        has 'resultCount.textContent' js/main.js
@@ -49,6 +49,21 @@ check "hero label"        bash -c 'grep -qE "01 / (IT SUPPORT|OPEN TO)" index.ht
 check "h1 is the name"    has '<h1 id="hero-title">Milad Nasrollahi</h1>' index.html
 check "slogan is the lede" has '<p class="lede">Where IT support meets intelligent automation.</p>' index.html
 check "single h1"         count_is '<h1' index.html 1
+
+# --- one label set: IT support / studio systems / automation -----------------
+check "pillars in hero"   has 'IT SUPPORT <span aria-hidden="true">·</span> STUDIO SYSTEMS <span aria-hidden="true">·</span> AUTOMATION' index.html
+check "pillars in strip"   has '<span>IT SUPPORT</span>' index.html
+check "systems in strip"   has '<span>STUDIO SYSTEMS</span>' index.html
+check "pillars in footer"  has 'IT SUPPORT / STUDIO SYSTEMS / AUTOMATION' index.html
+check "feature bridge"     has 'IT support · Studio systems · Python automation' index.html
+check "filter label"       has 'data-filter="automation" aria-pressed="false">Automation<span' index.html
+check "category chip"      has '<span class="category category-auto">Automation</span>' index.html
+check "practice title"     has '<h3>Automation &amp; Scripting</h3>' index.html
+check "no vibe language"   bash -c '! grep -qiE "vibe" index.html js/main.js css/style.css'
+check "no old footer"      bash -c '! grep -qF "SYSTEMS / SUPPORT / AUTOMATION" index.html'
+check "no old hero strip"  bash -c '! grep -qF "STUDIO PIPELINE <span" index.html'
+check "no old category"    bash -c '! grep -qF "Automation &amp; Vibe Code" index.html'
+check "no old category id" bash -c '! grep -qF "automation-vibe-code" index.html js/main.js'
 check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
 check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 check "print page size"   has '@page { size: A4' css/style.css
@@ -82,7 +97,7 @@ miladnasrollahi.mn@gmail.com
 Tehran, Iran
 Reliable IT Support
 Studio &amp; Pipeline Support
-Automation &amp; Vibe Coding
+Automation &amp; Scripting
 assets/Milad-Nasrollahi-CV.pdf
 assets/profile.webp
 EOF
