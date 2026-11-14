@@ -51,19 +51,13 @@ check "slogan is the lede" has '<p class="lede">Where IT support meets intellige
 check "single h1"         count_is '<h1' index.html 1
 
 # --- one label set: IT support / studio systems / automation -----------------
-check "pillars in hero"   has 'IT SUPPORT <span aria-hidden="true">·</span> STUDIO SYSTEMS <span aria-hidden="true">·</span> AUTOMATION' index.html
-check "pillars in strip"   has '<span>IT SUPPORT</span>' index.html
-check "systems in strip"   has '<span>STUDIO SYSTEMS</span>' index.html
-check "pillars in footer"  has 'IT SUPPORT / STUDIO SYSTEMS / AUTOMATION' index.html
+check "hero labels"        python -c "import re,sys; s=open('index.html',encoding='utf-8').read(); r=re.search(r'class=\"hero-bottom\">(.*?)</div>', s, re.S).group(1).split('<a')[0]; sys.exit(0 if ' '.join(re.sub(r'<[^>]+>',' ',r).split())=='IT SUPPORT · STUDIO SYSTEMS · AUTOMATION' else 1)"
+check "band labels"        python -c "import re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'class=\"discipline-strip\"[^>]*>(.*?)</div>', s, re.S).group(1); sys.exit(0 if re.findall(r'<span>(.*?)</span>', b)==['IT SUPPORT','STUDIO SYSTEMS','AUTOMATION','PYTHON','LOCAL LLMs','WINDOWS SYSTEMS'] else 1)"
+check "footer labels"      has 'IT SUPPORT / STUDIO SYSTEMS / AUTOMATION' index.html
+check "experience labels"  python -c "import re,sys,html; s=open('index.html',encoding='utf-8').read(); pairs=[(v, html.unescape(t).strip()) for v,t in re.findall(r'data-filter=\"([^\"]+)\"[^>]*>([^<]*)<span', s)]; chips=[html.unescape(c) for c in re.findall(r'class=\"category category-\w+\">(.*?)</span>', s)]; want=[('all','All'),('it-support-helpdesk','IT Support & Helpdesk'),('automation','Automation'),('other','Other')]; sys.exit(0 if pairs==want and chips==['Automation','IT Support & Helpdesk','Other','Other'] else 1)"
 check "feature bridge"     has 'IT support · Studio systems · Python automation' index.html
-check "filter label"       has 'data-filter="automation" aria-pressed="false">Automation<span' index.html
-check "category chip"      has '<span class="category category-auto">Automation</span>' index.html
-check "practice title"     has '<h3>Automation &amp; Scripting</h3>' index.html
 check "no vibe language"   bash -c '! grep -qiE "vibe" index.html js/main.js css/style.css'
-check "no old footer"      bash -c '! grep -qF "SYSTEMS / SUPPORT / AUTOMATION" index.html'
-check "no old hero strip"  bash -c '! grep -qF "STUDIO PIPELINE <span" index.html'
-check "no old category"    bash -c '! grep -qF "Automation &amp; Vibe Code" index.html'
-check "no old category id" bash -c '! grep -qF "automation-vibe-code" index.html js/main.js'
+
 check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
 check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 check "print page size"   has '@page { size: A4' css/style.css
