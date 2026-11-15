@@ -8,161 +8,268 @@
   var ctx = canvas.getContext && canvas.getContext('2d');
   if (!ctx) return; // .mn-fallback stays visible
 
-  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var reduce = motion.matches;
-
-  var size = 260;
-  var dpr = window.devicePixelRatio || 1;
-  canvas.width = size * dpr;
-  canvas.height = size * dpr;
-  canvas.style.width = size + 'px';
-  canvas.style.height = size + 'px';
-  ctx.scale(dpr, dpr);
-
   var fallback = container.querySelector('.mn-fallback');
   if (fallback) fallback.style.display = 'none';
   container.appendChild(canvas);
 
-  // The mark is the glyph drawn once per depth slice, each slice offset along
-  // a rotation-swinging extrusion vector so it reads as a solid form.
-  var SLICES = 30;
-  var DEPTH = 0.65;
-  var LIMIT = 0.45;
-  var FONT = '700 80px Arial, Helvetica, sans-serif';
-  var GAP = 4;
-  var LIME = getComputedStyle(document.documentElement).getPropertyValue('--lime').trim() || '#d2f89b';
-  var FACE = 'rgb(239, 239, 234)';
-  var SIDE = 'rgb(126, 134, 112)';
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', 'Interactive 3D relief of the MN monogram. Drag with a mouse, touchpad, or finger to rotate it.');
 
-  // Stamped per glyph: drawing 'MN' as one string let the extrusion close the
-  // gap between the letters, so the pair read as a single wedge.
-  var glyphs = (function () {
-    ctx.font = FONT;
-    var wm = ctx.measureText('M').width;
-    var wn = ctx.measureText('N').width;
-    var total = wm + wn + GAP;
-    return [
-      { ch: 'M', x: -total / 2 + wm / 2 },
-      { ch: 'N', x: -total / 2 + wm + GAP + wn / 2 }
-    ];
-  })();
+  // The mark is a point-cloud relief, not a stack of glyph stamps: the pair is
+  // rasterised into a small occupancy grid, every solid cell becomes a point on
+  // the front and back slab, and cells on the silhouette also get points at
+  // intermediate depths. That side wall is what makes the form read as solid
+  // once it turns away from the camera.
+  var GRID = 64;
+  var DEPTH = 0.17;
+  var RAMP = ['#6f8642', '#92b25a', '#b7da78', '#d2f89b'];
 
-  function stamp(dx, dy, fill) {
-    ctx.fillStyle = fill;
-    for (var g = 0; g < glyphs.length; g++) {
-      ctx.fillText(glyphs[g].ch, glyphs[g].x + dx, dy);
+  var points = buildPoints();
+
+  function buildPoints() {
+    var off = document.createElement('canvas');
+    off.width = GRID;
+    off.height = GRID;
+    var octx = off.getContext && off.getContext('2d', { willReadFrequently: true });
+    if (!octx) return null;
+
+    octx.fillStyle = '#ffffff';
+    octx.textBaseline = 'middle';
+    octx.textAlign = 'left';
+    octx.font = '900 ' + GRID + 'px "Arial Black", Arial, Helvetica, sans-serif';
+
+    var wm = octx.measureText('M').width;
+    var wn = octx.measureText('N').width;
+    var track = -GRID * 0.05;                 // tighten the pair into one mark
+    var total = wm + wn + track;
+    var fit = (GRID * 0.94) / total;          // letters fill 94% of the mask
+
+    octx.save();
+    octx.scale(fit, fit);
+    var x0 = (GRID / fit - total) / 2;
+    var baseline = GRID / fit / 2;
+    octx.fillText('M', x0, baseline);
+    octx.fillText('N', x0 + wm + track, baseline);
+    octx.restore();
+
+    var data = octx.getImageData(0, 0, GRID, GRID).data;
+
+    function solid(x, y) {
+      return x >= 0 && y >= 0 && x < GRID && y < GRID && data[(y * GRID + x) * 4 + 3] > 128;
+    }
+
+    // Stride 4: x, y, z, side. side 0 is a face point, 1-4 is a wall whose
+    // outward normal is -x, +x, -y, +y.
+    var out = [];
+    var step = (2 * DEPTH) / 5;
+
+    function wall(px, py, side) {
+      for (var s = 1; s < 5; s++) out.push(px, py, step * s - DEPTH, side + 1);
+    }
+
+    for (var y = 0; y < GRID; y++) {
+      for (var x = 0; x < GRID; x++) {
+        if (!solid(x, y)) continue;
+        var px = 2 * ((x + 0.5) / GRID - 0.5);
+        var py = 2 * ((y + 0.5) / GRID - 0.5);
+        out.push(px, py, -DEPTH, 0, px, py, DEPTH, 0);
+        if (!solid(x - 1, y)) wall(px, py, 0);
+        if (!solid(x + 1, y)) wall(px, py, 1);
+        if (!solid(x, y - 1)) wall(px, py, 2);
+        if (!solid(x, y + 1)) wall(px, py, 3);
+      }
+    }
+    return out.length ? out : null;
+  }
+
+  var START_X = -0.05;
+  var START_Y = 0.24;
+  var rotX = START_X;
+  var rotY = START_Y;
+
+  var width = 0;
+  var height = 0;
+
+  function draw() {
+    if (!points || !width || !height) return;
+
+    ctx.clearRect(0, 0, width, height);
+
+    var sy = Math.sin(rotY);
+    var cy = Math.cos(rotY);
+    var sx = Math.sin(rotX);
+    var cx = Math.cos(rotX);
+    var scale = 0.42 * Math.min(width, height);
+    var bands = [[], [], [], []];
+
+    // Only walls whose outward normal turns toward the camera are drawn;
+    // without this the far side of every stroke shows through its own face.
+    var faces = [sy * cx > 0, sy * cx < 0, sx < 0, sx > 0];
+
+    for (var i = 0; i < points.length; i += 4) {
+      var px = points[i];
+      var py = points[i + 1];
+      var pz = points[i + 2];
+      var side = points[i + 3];
+      if (side && !faces[side - 1]) continue;
+
+      // Yaw, then pitch, then a mild perspective divide.
+      var rx = px * cy + pz * sy;
+      var rz = pz * cy - px * sy;
+      var ry = py * cx - rz * sx;
+      var depth = py * sx + rz * cx;
+      var persp = 4.5 / (4.5 - depth);
+
+      var band = Math.floor((depth + 1.2) / 2.4 * 4);
+      band = band < 0 ? 0 : band > 3 ? 3 : band;
+
+      bands[band].push(
+        width / 2 + rx * scale * persp,
+        height / 2 + ry * scale * persp,
+        side ? 1.5 : 1.2
+      );
+    }
+
+    // Far band first so near points overprint it: painter's algorithm by depth.
+    for (var b = 0; b < 4; b++) {
+      ctx.fillStyle = RAMP[b];
+      var list = bands[b];
+      for (var k = 0; k < list.length; k += 3) {
+        ctx.fillRect(list[k], list[k + 1], list[k + 2], list[k + 2]);
+      }
     }
   }
 
-  var yaw = 0;
-  var pitch = 0;
-  var velYaw = 0;
-  var velPitch = 0;
+  var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  var frameInterval = 1000 / (coarse ? 24 : 30);
+
+  function resize(w, h) {
+    if (!w || !h) return;
+    width = w;
+    height = h;
+    var ratio = Math.min(window.devicePixelRatio || 1, coarse ? 1.25 : 1.5);
+    canvas.width = Math.round(w * ratio);
+    canvas.height = Math.round(h * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    draw();
+  }
+
+  var motion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var reduce = !!(motion && motion.matches);
+
+  var visible = false;
   var dragging = false;
-  var running = false;
+  var pointerId = null;
   var lastX = 0;
   var lastY = 0;
-  var started = 0;
+  var rafId = 0;
+  var lastDraw = 0;
 
-  function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
-  }
-
-  function render(now) {
-    var drift = reduce || dragging ? 0 : Math.sin(((now || 0) - started) * 0.00055) * 0.18;
-    var ex = clamp(0.8 + Math.sin(yaw + drift) * 0.85, 0.05, 1.5);
-    var ey = clamp(-0.62 - Math.sin(pitch) * 0.85, -1.5, 0.05);
-
-    ctx.clearRect(0, 0, size, size);
-    ctx.save();
-    ctx.translate(size / 2, size / 2);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = FONT;
-
-    // One flat side colour for the whole body, then the front face on top:
-    // a per-slice ramp banded the counters into separate slats.
-    for (var slice = SLICES; slice >= 1; slice--) {
-      stamp(ex * slice * DEPTH, ey * slice * DEPTH, SIDE);
+  function tick(now) {
+    rafId = 0;
+    if (!visible || document.hidden || reduce || dragging) return;
+    if (!lastDraw) lastDraw = now - frameInterval;
+    var dt = Math.min(now - lastDraw, 50);
+    if (dt >= frameInterval) {
+      rotY += 0.00018 * dt;                   // a slow, steady revolution
+      draw();
+      lastDraw = now;
     }
-    stamp(0, 0, FACE);
-
-    ctx.strokeStyle = LIME;
-    ctx.beginPath();
-    ctx.moveTo(-46, 40);
-    ctx.lineTo(46, 40);
-    ctx.stroke();
-    ctx.restore();
+    rafId = requestAnimationFrame(tick);
   }
 
-  function frame(now) {
-    if (!running) return;
-    if (!started) started = now;
-    if (!dragging) {
-      yaw += velYaw;
-      pitch = clamp(pitch + velPitch, -LIMIT, LIMIT);
-      velYaw *= 0.95;
-      velPitch *= 0.95;
-    }
-    render(now);
-    requestAnimationFrame(frame);
+  function start() {
+    if (rafId || reduce) return;
+    lastDraw = 0;
+    rafId = requestAnimationFrame(tick);
   }
 
-  function startLoop() {
-    if (running) return;
-    running = true;
-    requestAnimationFrame(frame);
+  function stop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+
+  function sync() {
+    if (visible && !document.hidden && !reduce && !dragging) start();
+    else stop();
   }
 
   canvas.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     dragging = true;
+    pointerId = e.pointerId;
     lastX = e.clientX;
     lastY = e.clientY;
-    velYaw = 0;
-    velPitch = 0;
     if (canvas.setPointerCapture) {
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     }
+    stop();
   });
 
-  window.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    var dx = e.clientX - lastX;
-    var dy = e.clientY - lastY;
+  canvas.addEventListener('pointermove', function (e) {
+    if (!dragging || e.pointerId !== pointerId) return;
+    rotY += 0.012 * (e.clientX - lastX);
+    rotX = Math.max(-1.2, Math.min(1.2, rotX + 0.012 * (e.clientY - lastY)));
     lastX = e.clientX;
     lastY = e.clientY;
-    yaw += dx * 0.012;
-    pitch = clamp(pitch + dy * 0.006, -LIMIT, LIMIT);
-    velYaw = dx * 0.006;
-    velPitch = dy * 0.003;
-    // Repaint now so the drag tracks the pointer even if the loop is throttled.
-    render(0);
+    draw();
   });
 
-  window.addEventListener('pointerup', function () { dragging = false; });
-  window.addEventListener('pointercancel', function () { dragging = false; });
+  function endDrag(e) {
+    if (!dragging || (e && e.pointerId !== pointerId)) return;
+    dragging = false;
+    pointerId = null;
+    sync();
+  }
+
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  window.addEventListener('pointerup', endDrag);
 
   var reset = document.getElementById('mark-reset');
   if (reset) {
     reset.addEventListener('click', function () {
-      yaw = 0;
-      pitch = 0;
-      velYaw = 0;
-      velPitch = 0;
-      render(0);
+      rotX = START_X;
+      rotY = START_Y;
+      draw();
     });
   }
 
-  render(0);
-  if (!reduce) startLoop();
+  if (motion) {
+    var onMotion = function () {
+      reduce = motion.matches;
+      if (reduce) {
+        stop();
+        draw();
+      } else {
+        sync();
+      }
+    };
+    if (motion.addEventListener) motion.addEventListener('change', onMotion);
+    else if (motion.addListener) motion.addListener(onMotion);
+  }
 
-  motion.addEventListener('change', function (e) {
-    reduce = e.matches;
-    if (reduce) {
-      running = false;
-      render(0);
-    } else {
-      startLoop();
-    }
-  });
+  document.addEventListener('visibilitychange', sync);
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      visible = entries[0].isIntersecting;
+      sync();
+    }).observe(canvas);
+  } else {
+    visible = true;
+    sync();
+  }
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(function (entries) {
+      var box = entries[0].contentRect;
+      resize(box.width, box.height);
+    }).observe(canvas);
+  } else {
+    resize(container.clientWidth || 260, container.clientHeight || 260);
+  }
+
+  resize(container.clientWidth || 260, container.clientHeight || 260);
+  draw();
 })();
