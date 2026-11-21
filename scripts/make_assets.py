@@ -64,6 +64,10 @@ def touch_icon(size: int = 180) -> None:
 
 
 def portrait() -> None:
+    # profile.jpg is not tracked (private source image); skip rather than fail.
+    if not (ASSETS / "profile.jpg").exists():
+        print("skipped assets/profile.webp (no assets/profile.jpg to derive it from)")
+        return
     source = Image.open(ASSETS / "profile.jpg").convert("RGB")
     width = 776
     height = round(source.height * width / source.width)
