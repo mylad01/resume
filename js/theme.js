@@ -23,7 +23,8 @@
     paper: { bg: '#f4f5ee', surface: '#ffffff', card: '#eef0e6', text: '#20271b', muted: '#526242', accent: '#4a6516', line: '#dfe3d6' },
     slate: { bg: '#0f1419', surface: '#151c23', card: '#1a232c', text: '#e6edf3', muted: '#9aa7b4', accent: '#7cc4ff', line: '#283440' },
     forest: { bg: '#0c1512', surface: '#101b16', card: '#14211b', text: '#e8f0e9', muted: '#9db3a2', accent: '#86e0b0', line: '#25362c' },
-    sand: { bg: '#f6f1e7', surface: '#fffdf8', card: '#efe6d5', text: '#241d12', muted: '#6b5a3e', accent: '#8a5a12', line: '#e0d3bb' }
+    sand: { bg: '#f6f1e7', surface: '#fffdf8', card: '#efe6d5', text: '#241d12', muted: '#6b5a3e', accent: '#8a5a12', line: '#e0d3bb' },
+    glass: { bg: '#0b1620', surface: '#122230', card: '#163042', text: '#e9f5fb', muted: '#a3bccb', accent: '#7fe3ff', line: '#254355' }
   };
 
   /* --- colour maths ------------------------------------------------------ */
@@ -114,13 +115,17 @@
       '--mark-2': mix(roles.accent, roles.bg, 0.34),
       '--mark-3': mix(roles.accent, roles.bg, 0.15),
       '--mark-4': roles.accent,
-      '--shadow': '0 22px 45px -32px ' + alpha(dark ? '#000000' : '#20271b', dark ? 0.8 : 0.28)
+      '--shadow': '0 22px 45px -32px ' + alpha(dark ? '#000000' : '#20271b', dark ? 0.8 : 0.28),
+      '--glass-bg': alpha(roles.card, 0.5),
+      '--glass-bg-soft': alpha(roles.card, 0.68),
+      '--glass-line': alpha(mix(roles.line, roles.text, 0.2), 0.75),
+      '--glass-hi': alpha(lift, dark ? 0.12 : 0.6)
     };
   }
 
   /* --- apply / persist --------------------------------------------------- */
 
-  var state = { preset: 'night', roles: Object.assign({}, PRESETS.night), contrast: 'standard', grain: 'on' };
+  var state = { preset: 'night', roles: Object.assign({}, PRESETS.night), contrast: 'standard', grain: 'on', glass: 'off' };
   var applied = [];
 
   function applyTokens(tokens) {
@@ -140,6 +145,7 @@
         roles: state.roles,
         contrast: state.contrast,
         grain: state.grain,
+        glass: state.glass,
         tokens: derive(state.roles),
         mode: luminance(state.roles.bg) < 0.42 ? 'dark' : 'light'
       }));
@@ -151,6 +157,8 @@
     else root.removeAttribute('data-contrast');
     if (state.grain === 'off') root.setAttribute('data-grain', 'off');
     else root.removeAttribute('data-grain');
+    if (state.glass === 'soft' || state.glass === 'strong') root.setAttribute('data-glass', state.glass);
+    else root.removeAttribute('data-glass');
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', state.roles.bg);
   }
@@ -245,6 +253,9 @@
     document.querySelectorAll('[data-contrast-choice]').forEach(function (btn) {
       btn.setAttribute('aria-pressed', String(btn.getAttribute('data-contrast-choice') === state.contrast));
     });
+    document.querySelectorAll('[data-glass-choice]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-glass-choice') === state.glass));
+    });
     var grain = document.getElementById('grain-toggle');
     if (grain) grain.checked = state.grain === 'on';
   }
@@ -296,6 +307,7 @@
         state.roles = Object.assign({}, PRESETS.night, saved.roles);
         state.contrast = saved.contrast === 'high' ? 'high' : 'standard';
         state.grain = saved.grain === 'off' ? 'off' : 'on';
+        state.glass = (saved.glass === 'soft' || saved.glass === 'strong') ? saved.glass : 'off';
       }
     } catch (e) {}
 
@@ -320,6 +332,13 @@
       });
     });
 
+    document.querySelectorAll('[data-glass-choice]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.glass = btn.getAttribute('data-glass-choice');
+        render();
+      });
+    });
+
     var grain = document.getElementById('grain-toggle');
     if (grain) {
       grain.addEventListener('change', function () {
@@ -333,6 +352,7 @@
       reset.addEventListener('click', function () {
         state.contrast = 'standard';
         state.grain = 'on';
+        state.glass = 'off';
         loadPreset('night');
       });
     }

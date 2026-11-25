@@ -121,21 +121,45 @@
 
   syncFilterCounts();
 
+  // Clipboard: the async API needs a secure, focused document and can reject;
+  // fall back to the old selection trick so COPY still works when it does.
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    field.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(field);
+    return ok;
+  }
+
+  function copyText(text) {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      return Promise.resolve(legacyCopy(text));
+    }
+    return navigator.clipboard.writeText(text).then(function () {
+      return true;
+    }, function () {
+      return legacyCopy(text);
+    });
+  }
+
   var copyBtn = document.getElementById('copy-email');
   var feedback = document.getElementById('copy-feedback');
+  var copyTimer = null;
 
   if (copyBtn && feedback) {
     copyBtn.addEventListener('click', function () {
-      if (!navigator.clipboard) {
-        feedback.textContent = 'Copy failed';
-        return;
-      }
-      navigator.clipboard.writeText(copyBtn.getAttribute('data-email')).then(function () {
-        feedback.textContent = 'Copied!';
-      }).catch(function () {
-        feedback.textContent = 'Copy failed';
-      }).finally(function () {
-        setTimeout(function () { feedback.textContent = ''; }, 2000);
+      copyText(copyBtn.getAttribute('data-email')).then(function (ok) {
+        feedback.textContent = ok ? 'Copied!' : 'Copy failed';
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(function () { feedback.textContent = ''; }, 2000);
       });
     });
   }
@@ -154,11 +178,8 @@
   }
 
   function copyLink(url) {
-    if (!navigator.clipboard) { announce('Copy failed'); return; }
-    navigator.clipboard.writeText(url).then(function () {
-      announce('Link copied');
-    }).catch(function () {
-      announce('Copy failed');
+    copyText(url).then(function (ok) {
+      announce(ok ? 'Link copied' : 'Copy failed');
     });
   }
 

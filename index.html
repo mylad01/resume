@@ -27,6 +27,7 @@
         root.setAttribute('data-theme', saved.mode === 'light' ? 'light' : 'dark');
         if (saved.contrast === 'high') root.setAttribute('data-contrast', 'high');
         if (saved.grain === 'off') root.setAttribute('data-grain', 'off');
+        if (saved.glass === 'soft' || saved.glass === 'strong') root.setAttribute('data-glass', saved.glass);
       } else {
         root.setAttribute('data-theme', 'dark');
       }
@@ -35,7 +36,7 @@
       if (meta && saved && saved.roles && saved.roles.bg) meta.setAttribute('content', saved.roles.bg);
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261125c">
+  <link rel="stylesheet" href="css/style.css?v=20261125e">
 
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Milad Nasrollahi">
@@ -415,6 +416,7 @@
         <button type="button" class="preset" data-preset="slate" aria-pressed="false">Slate</button>
         <button type="button" class="preset" data-preset="forest" aria-pressed="false">Forest</button>
         <button type="button" class="preset" data-preset="sand" aria-pressed="false">Sand</button>
+        <button type="button" class="preset" data-preset="glass" aria-pressed="false">Glass</button>
       </div>
     </fieldset>
 
@@ -440,6 +442,15 @@
       </div>
     </fieldset>
 
+    <fieldset class="theme-group">
+      <legend>Glass</legend>
+      <div class="segmented">
+        <button type="button" data-glass-choice="off" aria-pressed="true">Off</button>
+        <button type="button" data-glass-choice="soft" aria-pressed="false">Soft</button>
+        <button type="button" data-glass-choice="strong" aria-pressed="false">Strong</button>
+      </div>
+    </fieldset>
+
     <label class="theme-check">
       <input type="checkbox" id="grain-toggle" checked>
       <span>Film grain</span>
@@ -451,8 +462,8 @@
     </div>
   </dialog>
 
-  <script src="js/theme.js?v=20261125c"></script>
-  <script src="js/mark.js?v=20261125c"></script>
-  <script src="js/main.js?v=20261125c"></script>
+  <script src="js/theme.js?v=20261125e"></script>
+  <script src="js/mark.js?v=20261125e"></script>
+  <script src="js/main.js?v=20261125e"></script>
 </body>
 </html>

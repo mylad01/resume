@@ -88,8 +88,14 @@ appearance panel's own labels are chrome, not CV text.
    - derived text tokens have a contrast floor: `tone()` walks the fade back
      toward the background until the colour clears 4.5:1 on background **and**
      card, so light presets cannot produce unreadable small type;
-   - five presets (night, paper, slate, forest, sand), a contrast readout, a
-     grain switch and a mode toggle; `t` still swaps night ↔ paper;
+   - six presets (night, paper, slate, forest, sand, glass), a contrast readout,
+     a grain switch and a mode toggle; `t` still swaps night ↔ paper;
+   - liquid glass: a Glass segmented control (off / soft / strong) that works
+     with any preset. It sets `data-glass` on `<html>`; the sheet gives the nav,
+     experience rows, practice cards, about facts and panel a translucent
+     `--glass-bg` surface with backdrop blur, saturation and a specular top
+     edge. Blur/alpha are tokens derived from the same roles, so glass never
+     changes text contrast, and print strips the whole effect;
    - persisted in `localStorage` (`mn-theme-v2`) as the role set **plus** the
      derived token map, so the head script repaints before first paint with no
      colour maths. Inline token styles are stripped on `beforeprint` and
@@ -105,8 +111,12 @@ appearance panel's own labels are chrome, not CV text.
    refuses to run if the expected page structure is missing. `verify.sh`
    cross-checks the PDF with poppler when it is installed: all four entries, no
    stray text, exactly one page.
+4. Copy email. `copyText()` uses `navigator.clipboard` when it is available and
+   falls back to a hidden textarea plus `execCommand('copy')` when the async
+   API is blocked or missing, so COPY works in strict browsers and plain HTTP.
+   The share sheet's copy-link path uses the same helper.
 
-Cache version: `?v=20261125c`. Whenever CSS or JS changes, bump that string in
+Cache version: `?v=20261125e`. Whenever CSS or JS changes, bump that string in
 `index.html` **and** in `sw.js` (cache name plus the `CORE` list) together, or
 returning visitors keep the old files. `verify.sh` reads the version out of
 `index.html` and fails if `sw.js` disagrees, so the two cannot drift.

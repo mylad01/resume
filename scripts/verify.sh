@@ -59,6 +59,10 @@ check "sw caches build"   has "./css/style.css?v=$build" sw.js
 check "sw cache version"  has "mn-cv-$build" sw.js
 check "sw registered"     has 'serviceWorker.register' js/main.js
 check "panel not printed" has '.theme-panel { display: none' css/style.css
+check "glass preset"      has 'glass: {' js/theme.js
+check "glass strength ui" has 'data-glass-choice="strong"' index.html
+check "glass css hooks"   has 'html[data-glass="strong"]' css/style.css
+check "copy fallback"     has 'document.execCommand' js/main.js
 
 # The PDF is generated from index.html; cross-check it when poppler is around.
 if command -v pdftotext >/dev/null 2>&1; then

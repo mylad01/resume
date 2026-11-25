@@ -43,6 +43,12 @@
   --dot-glow: #d2f89544;
   --shadow: 0 22px 45px -32px #000000cc;
 
+  /* liquid glass: derived by js/theme.js, these are pre-script fallbacks */
+  --glass-bg: #1b2733b3;
+  --glass-bg-soft: #1b2733b8;
+  --glass-line: #2b3a45cc;
+  --glass-hi: #ffffff1f;
+
   /* the monogram relief, far band to near band */
   --mark-1: #6f8642;
   --mark-2: #92b25a;
@@ -1290,6 +1296,50 @@ html.js [data-reveal].is-in .practice-card:nth-of-type(3) { transition-delay: .2
 }
 
 /* --- motion policy ------------------------------------------------------ */
+
+/* --- liquid glass ------------------------------------------------------- */
+
+html[data-glass] .navigation,
+html[data-glass] .experience-row,
+html[data-glass] .practice-card,
+html[data-glass] .about-facts,
+html[data-glass] .theme-panel {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-bg-soft);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+}
+
+html[data-glass="strong"] .navigation,
+html[data-glass="strong"] .experience-row,
+html[data-glass="strong"] .practice-card,
+html[data-glass="strong"] .about-facts,
+html[data-glass="strong"] .theme-panel {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(175%);
+  backdrop-filter: blur(22px) saturate(175%);
+}
+
+html[data-glass] .navigation {
+  border-width: 0 0 1px;
+  box-shadow: inset 0 -1px 0 var(--glass-hi);
+}
+
+html[data-glass] .experience-row:hover { background: var(--row-hover); }
+html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
+
+@media print {
+  html[data-glass] .navigation,
+  html[data-glass] .experience-row,
+  html[data-glass] .practice-card,
+  html[data-glass] .about-facts {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
