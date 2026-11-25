@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the share card and touch icon. Usage: python scripts/make_assets.py"""
+"""Generate the share card and touch icon. Usage: python3 scripts/make_assets.py
+
+Fonts are looked up per file name across the usual Windows, macOS and Linux
+font directories. Set CV_FONT_FILE / CV_FONT_FILE_BOLD to pin exact files.
+"""
+from __future__ import annotations
+
+import os
+from functools import lru_cache
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -9,17 +18,51 @@ ASSETS = ROOT / "assets"
 BG, LINE = (17, 19, 16), (52, 56, 46)
 TEXT, MUTED, LIME = (239, 239, 234), (162, 167, 154), (210, 248, 155)
 
-BOLD = ("C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/arial.ttf")
-REGULAR = ("C:/Windows/Fonts/arial.ttf",)
+# Arial first so the card keeps the look it was designed with; Liberation Sans is
+# metric-compatible with Arial, DejaVu is the near-universal Linux fallback.
+BOLD = ("arialbd.ttf", "Arial Bold.ttf", "LiberationSans-Bold.ttf", "DejaVuSans-Bold.ttf")
+REGULAR = ("arial.ttf", "Arial.ttf", "LiberationSans-Regular.ttf", "DejaVuSans.ttf")
+
+FONT_DIRS = (
+    Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts",
+    Path("/System/Library/Fonts"),
+    Path("/System/Library/Fonts/Supplemental"),
+    Path("/Library/Fonts"),
+    Path.home() / "Library/Fonts",
+    Path("/usr/share/fonts"),
+    Path("/usr/local/share/fonts"),
+    Path.home() / ".fonts",
+    Path.home() / ".local/share/fonts",
+)
+
+
+@lru_cache(maxsize=None)
+def discover(names: tuple[str, ...]) -> str | None:
+    override = os.environ.get("CV_FONT_FILE_BOLD" if "Bold" in names[0] else "CV_FONT_FILE")
+    if override and Path(override).is_file():
+        return override
+    for name in names:
+        for directory in FONT_DIRS:
+            if not directory.is_dir():
+                continue
+            direct = directory / name
+            if direct.is_file():
+                return str(direct)
+            matches = sorted(directory.rglob(name))
+            if matches:
+                return str(matches[0])
+    return None
 
 
 def load(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    for path in (BOLD if bold else REGULAR):
-        try:
-            return ImageFont.truetype(path, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+    path = discover(BOLD if bold else REGULAR)
+    if path is None:
+        raise SystemExit(
+            "no usable TrueType font found for %s text.\n"
+            "Install a font (e.g. fonts-liberation) or point CV_FONT_FILE%s at a .ttf file."
+            % ("bold" if bold else "regular", "_BOLD" if bold else "")
+        )
+    return ImageFont.truetype(path, size)
 
 
 def og_card() -> None:

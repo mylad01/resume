@@ -22,7 +22,17 @@
   // once it turns away from the camera.
   var GRID = 64;
   var DEPTH = 0.17;
-  var RAMP = ['#6f8642', '#92b25a', '#b7da78', '#d2f89b'];
+  var RAMP_FALLBACK = ['#6f8642', '#92b25a', '#b7da78', '#d2f89b'];
+  var RAMP = RAMP_FALLBACK.slice();
+
+  // The relief takes its four bands from the theme, so the light theme gets
+  // deeper greens instead of a wash of pale ones on paper.
+  function refreshRamp() {
+    var styles = window.getComputedStyle(document.documentElement);
+    RAMP = RAMP_FALLBACK.map(function (fallback, index) {
+      return styles.getPropertyValue('--mark-' + (index + 1)).trim() || fallback;
+    });
+  }
 
   var points = buildPoints();
 
@@ -271,5 +281,12 @@
   }
 
   resize(container.clientWidth || 260, container.clientHeight || 260);
+
+  refreshRamp();
+  document.addEventListener('mn:theme', function () {
+    refreshRamp();
+    if (!rafId) draw();
+  });
+
   draw();
 })();

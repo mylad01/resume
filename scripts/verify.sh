@@ -4,6 +4,8 @@ set -u
 cd "$(dirname "$0")/.."
 fail=0
 
+PY=$(command -v python3 || command -v python) || { echo "FAIL  python3 or python is required"; exit 1; }
+
 check() { # check <label> <command...>
   local label="$1"; shift
   if "$@" >/dev/null 2>&1; then printf 'PASS  %s\n' "$label"
@@ -32,6 +34,21 @@ check "contact links"     has 'class="contact-links"' index.html
 check "copy hook"         has 'id="copy-email"' index.html
 check "breakpoints"       has 'max-width: 760px' css/style.css
 check "reduced motion"    has 'prefers-reduced-motion: reduce' css/style.css
+check "theme toggle"      has 'id="theme-toggle"' index.html
+check "theme tokens"      has '--accent: var(--lime)' css/style.css
+check "light theme"       has ':root[data-theme="light"]' css/style.css
+check "theme meta"        has 'name="color-scheme" content="dark light"' index.html
+check "mark tokens"       has "getPropertyValue('--mark-'" js/mark.js
+check "section rail"      count_is 'data-rail=' index.html 5
+check "share button"      has 'id="share-page"' index.html
+check "cache-busted css"  bash -c 'grep -qE "css/style\.css\?v=[0-9]+" index.html'
+check "cache-busted js"   bash -c '[ "$(grep -cE "js/(main|mark)\.js\?v=[0-9]+" index.html)" -eq 2 ]'
+check "ci gate"           has 'scripts/verify.sh' .github/workflows/verify.yml
+check "404 redirect"      has 'url=./' 404.html
+check "404 root detect"   has "indexOf('/resume/')" 404.html
+check "filter deep link"  has 'URLSearchParams' js/main.js
+check "rail rule"         has '.section-rail' css/style.css
+check "share fallback"    has 'navigator.share' js/main.js
 
 # --- filter wiring -----------------------------------------------------------
 for cat in automation it-support-helpdesk other; do
@@ -51,10 +68,10 @@ check "slogan is the lede" has '<p class="lede">Where IT support meets intellige
 check "single h1"         count_is '<h1' index.html 1
 
 # --- one label set: IT support / studio systems / automation -----------------
-check "hero labels"        python -c "import re,sys; s=open('index.html',encoding='utf-8').read(); r=re.search(r'class=\"hero-bottom\">(.*?)</div>', s, re.S).group(1).split('<a')[0]; sys.exit(0 if ' '.join(re.sub(r'<[^>]+>',' ',r).split())=='IT SUPPORT · STUDIO SYSTEMS · AUTOMATION' else 1)"
-check "band labels"        python -c "import re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'class=\"discipline-strip\"[^>]*>(.*?)</div>', s, re.S).group(1); sys.exit(0 if re.findall(r'<span>(.*?)</span>', b)==['IT SUPPORT','STUDIO SYSTEMS','AUTOMATION','PYTHON','LOCAL LLMs','WINDOWS SYSTEMS'] else 1)"
+check "hero labels"        "$PY" -c "import re,sys; s=open('index.html',encoding='utf-8').read(); r=re.search(r'class=\"hero-bottom\">(.*?)</div>', s, re.S).group(1).split('<a')[0]; sys.exit(0 if ' '.join(re.sub(r'<[^>]+>',' ',r).split())=='IT SUPPORT · STUDIO SYSTEMS · AUTOMATION' else 1)"
+check "band labels"        "$PY" -c "import re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'class=\"discipline-strip\"[^>]*>(.*?)</div>', s, re.S).group(1); sys.exit(0 if re.findall(r'<span>(.*?)</span>', b)==['IT SUPPORT','STUDIO SYSTEMS','AUTOMATION','PYTHON','LOCAL LLMs','WINDOWS SYSTEMS'] else 1)"
 check "footer labels"      has 'IT SUPPORT / STUDIO SYSTEMS / AUTOMATION' index.html
-check "experience labels"  python -c "import re,sys,html; s=open('index.html',encoding='utf-8').read(); pairs=[(v, html.unescape(t).strip()) for v,t in re.findall(r'data-filter=\"([^\"]+)\"[^>]*>([^<]*)<span', s)]; chips=[html.unescape(c) for c in re.findall(r'class=\"category category-\w+\">(.*?)</span>', s)]; want=[('all','All'),('it-support-helpdesk','IT Support & Helpdesk'),('automation','Automation'),('other','Other')]; sys.exit(0 if pairs==want and chips==['Automation','IT Support & Helpdesk','Other','Other'] else 1)"
+check "experience labels"  "$PY" -c "import re,sys,html; s=open('index.html',encoding='utf-8').read(); pairs=[(v, html.unescape(t).strip()) for v,t in re.findall(r'data-filter=\"([^\"]+)\"[^>]*>([^<]*)<span', s)]; chips=[html.unescape(c) for c in re.findall(r'class=\"category category-\w+\">(.*?)</span>', s)]; want=[('all','All'),('it-support-helpdesk','IT Support & Helpdesk'),('automation','Automation'),('other','Other')]; sys.exit(0 if pairs==want and chips==['Automation','IT Support & Helpdesk','Other','Other'] else 1)"
 check "feature bridge"     has 'IT support · Studio systems · Python automation' index.html
 check "no vibe language"   bash -c '! grep -qiE "vibe" index.html js/main.js css/style.css'
 
@@ -62,9 +79,9 @@ check "no fake arrows"    bash -c '! grep -qF "job-arrow" index.html'
 check "mobile panel compact" has '.sculpture { height: 240px; }' css/style.css
 check "print page size"   has '@page { size: A4' css/style.css
 check "print block"       has '@media print' css/style.css
-check "print parses"      node -e "const fs=require('fs');const css=fs.readFileSync('css/style.css','utf8');const open=(css.match(/{/g)||[]).length,close=(css.match(/}/g)||[]).length;process.exit(open===close?0:1)"
+check "print parses"      "$PY" -c "import sys; css=open('css/style.css',encoding='utf-8').read(); sys.exit(0 if css.count('{')==css.count('}') else 1)"
 check "vcard"             has 'BEGIN:VCARD' assets/milad-nasrollahi.vcf
-check "vcard crlf"        python -c "import sys; d=open('assets/milad-nasrollahi.vcf','rb').read(); sys.exit(0 if d.count(bytes([13,10])) >= 10 else 1)"
+check "vcard crlf"        "$PY" -c "import sys; d=open('assets/milad-nasrollahi.vcf','rb').read(); sys.exit(0 if d.count(bytes([13,10])) >= 10 else 1)"
 
 check "vcard linked"      has 'assets/milad-nasrollahi.vcf' index.html
 check "vcard no placeholder url" bash -c '! grep -q "^URL:" assets/milad-nasrollahi.vcf'
@@ -103,8 +120,23 @@ while IFS= read -r line; do
 done <<< "$strings"
 [ $missing -eq 0 ] && printf 'PASS  content fidelity\n'
 
-chips=$(python -c "import re; s=open('index.html',encoding='utf-8').read(); b=re.findall(r'<div class=\"tags\">(.*?)</div>', s, re.S); print(sum(len(re.findall('<span>', x)) for x in b))")
+chips=$("$PY" -c "import re; s=open('index.html',encoding='utf-8').read(); b=re.findall(r'<div class=\"tags\">(.*?)</div>', s, re.S); print(sum(len(re.findall('<span>', x)) for x in b))")
 [ "$chips" -eq 17 ] && printf 'PASS  tag chips (17)\n' || { printf 'FAIL  tag chips (%s)\n' "$chips"; fail=1; }
+
+# --- frozen copy -------------------------------------------------------------
+# The page text is frozen: scripts/text-snapshot.txt holds every visible text
+# node. Markup, classes and UI may change freely; wording may not. An approved
+# copy change is recorded with: python3 scripts/page_text.py --write
+diffout=$(mktemp)
+if "$PY" scripts/page_text.py > "$diffout.rendered" 2>/dev/null &&
+   diff -u scripts/text-snapshot.txt "$diffout.rendered" > "$diffout" 2>&1; then
+  printf 'PASS  copy frozen\n'
+else
+  printf 'FAIL  copy frozen — page text no longer matches scripts/text-snapshot.txt\n'
+  sed -n '1,24p' "$diffout"
+  fail=1
+fi
+rm -f "$diffout" "$diffout.rendered"
 
 # --- metadata ----------------------------------------------------------------
 check "description"       has 'name="description"' index.html
@@ -119,7 +151,7 @@ check "role in nav"       has 'IT SUPPORT<br>SYSTEMS SPECIALIST' index.html
 check "role in json-ld"   has '"jobTitle": "IT Support & Systems Specialist"' index.html
 check "old role gone"     bash -c '! grep -qF "Vibe Coder" index.html'
 check "json-ld person"    has '"@type": "Person"' index.html
-check "json-ld valid"     python -c "import json,re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'<script type=\"application/ld\+json\">(.*?)</script>', s, re.S).group(1); d=json.loads(b); sys.exit(0 if d['name']=='Milad Nasrollahi' else 1)"
+check "json-ld valid"     "$PY" -c "import json,re,sys; s=open('index.html',encoding='utf-8').read(); b=re.search(r'<script type=\"application/ld\+json\">(.*?)</script>', s, re.S).group(1); d=json.loads(b); sys.exit(0 if d['name']=='Milad Nasrollahi' else 1)"
 
 # --- leftovers ---------------------------------------------------------------
 check "no old palette"    bash -c '! grep -qE "#0b0b0d|#141418|#e6e6e6" css/style.css'
