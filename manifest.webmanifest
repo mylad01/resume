@@ -1,0 +1,16 @@
+{
+  "name": "Milad Nasrollahi — IT Support & Systems Specialist",
+  "short_name": "Milad Nasrollahi",
+  "description": "IT support, studio systems and Python automation. Help desk, VFX pipeline support and workflow tooling.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111310",
+  "theme_color": "#111310",
+  "lang": "en",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

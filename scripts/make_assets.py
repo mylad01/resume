@@ -106,6 +106,29 @@ def touch_icon(size: int = 180) -> None:
     print("wrote assets/apple-touch-icon.png %dx%d" % (size, size))
 
 
+def app_icon(size: int, maskable: bool = False) -> None:
+    image = Image.new("RGB", (size, size), BG)
+    draw = ImageDraw.Draw(image)
+    if not maskable:
+        draw.rounded_rectangle([(0, 0), (size - 1, size - 1)], radius=int(size * 0.16), fill=BG)
+
+    # Maskable icons are cropped to a circle: keep the mark inside the safe zone.
+    scale = 0.36 if maskable else 0.40
+    font = load(int(size * scale), bold=True)
+    text = "MN"
+    baseline = 0.335 if maskable else 0.30
+    draw.text(((size - draw.textlength(text, font=font)) / 2, size * baseline),
+              text, font=font, fill=TEXT)
+    line_y = 0.655 if maskable else 0.70
+    half = 0.15 if maskable else 0.19
+    draw.line([(size * (0.5 - half), size * line_y), (size * (0.5 + half), size * line_y)],
+              fill=LIME, width=max(2, size // 60))
+
+    path = ASSETS / ("icon-maskable-%d.png" % size if maskable else "icon-%d.png" % size)
+    image.save(path, optimize=True)
+    print("wrote %s %dx%d" % (path.relative_to(ROOT), size, size))
+
+
 def portrait() -> None:
     # profile.jpg is not tracked (private source image); skip rather than fail.
     if not (ASSETS / "profile.jpg").exists():
@@ -122,4 +145,7 @@ def portrait() -> None:
 if __name__ == "__main__":
     og_card()
     touch_icon()
+    app_icon(192)
+    app_icon(512)
+    app_icon(512, maskable=True)
     portrait()

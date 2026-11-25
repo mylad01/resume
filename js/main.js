@@ -3,6 +3,14 @@
 
   // Anchor scrolling is CSS-only: html { scroll-behavior: smooth; scroll-padding-top: 100px }.
 
+  // Offline: the service worker caches the page and its assets. HTML stays
+  // network-first there, so a new build shows up on the next visit.
+  if ('serviceWorker' in navigator && /^https?:$/.test(window.location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+
   var progress = document.getElementById('scroll-progress');
 
   function updateProgress() {
@@ -132,32 +140,114 @@
     });
   }
 
-  // Theme. The head script already picked one before first paint; the toggle
-  // records an explicit choice and everything else reads the token layer.
+  // Appearance engine. The head script applies the saved look before first
+  // paint; here the panel edits it. Everything lands on data attributes on
+  // <html>, and the token layer does the rest.
   var root = document.documentElement;
-  var themeToggle = document.getElementById('theme-toggle');
+  var panel = document.getElementById('theme-panel');
+  var openBtn = document.getElementById('theme-open');
   var themeMeta = document.querySelector('meta[name="theme-color"]');
+  var ACCENTS = ['lime', 'teal', 'amber', 'violet', 'ice'];
+  var appearance = loadAppearance();
 
-  function applyTheme(theme, persist) {
-    root.setAttribute('data-theme', theme);
-    if (themeMeta) themeMeta.setAttribute('content', theme === 'light' ? '#f4f5ee' : '#111310');
-    if (themeToggle) {
-      themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
-      themeToggle.setAttribute('aria-label', theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
-    }
-    if (persist) {
-      try { localStorage.setItem('mn-theme', theme); } catch (e) {}
-    }
-    document.dispatchEvent(new CustomEvent('mn:theme', { detail: theme }));
+  function loadAppearance() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem('mn-appearance') || 'null'); } catch (e) {}
+    saved = saved || {};
+    return {
+      theme: saved.theme === 'light' ? 'light' : 'dark',
+      accent: ACCENTS.indexOf(saved.accent) > -1 ? saved.accent : 'lime',
+      contrast: saved.contrast === 'high' ? 'high' : 'standard',
+      grain: saved.grain === 'off' ? 'off' : 'on'
+    };
   }
 
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function () {
-      applyTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light', true);
+  function syncControls() {
+    document.querySelectorAll('[data-theme-choice]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-theme-choice') === appearance.theme));
+    });
+    document.querySelectorAll('[data-accent-choice]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-accent-choice') === appearance.accent));
+    });
+    document.querySelectorAll('[data-contrast-choice]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-contrast-choice') === appearance.contrast));
+    });
+    var grain = document.getElementById('grain-toggle');
+    if (grain) grain.checked = appearance.grain === 'on';
+  }
+
+  function paint(persist) {
+    root.setAttribute('data-theme', appearance.theme);
+    if (appearance.accent === 'lime') root.removeAttribute('data-accent');
+    else root.setAttribute('data-accent', appearance.accent);
+    if (appearance.contrast === 'high') root.setAttribute('data-contrast', 'high');
+    else root.removeAttribute('data-contrast');
+    if (appearance.grain === 'off') root.setAttribute('data-grain', 'off');
+    else root.removeAttribute('data-grain');
+    if (themeMeta) themeMeta.setAttribute('content', appearance.theme === 'light' ? '#f4f5ee' : '#111310');
+    syncControls();
+    if (persist) {
+      try { localStorage.setItem('mn-appearance', JSON.stringify(appearance)); } catch (e) {}
+    }
+    document.dispatchEvent(new CustomEvent('mn:theme', { detail: appearance.theme }));
+  }
+
+  function setAppearance(patch) {
+    Object.keys(patch).forEach(function (key) { appearance[key] = patch[key]; });
+    paint(true);
+  }
+
+  paint(false);
+
+  document.querySelectorAll('[data-theme-choice]').forEach(function (btn) {
+    btn.addEventListener('click', function () { setAppearance({ theme: btn.getAttribute('data-theme-choice') }); });
+  });
+  document.querySelectorAll('[data-accent-choice]').forEach(function (btn) {
+    btn.addEventListener('click', function () { setAppearance({ accent: btn.getAttribute('data-accent-choice') }); });
+  });
+  document.querySelectorAll('[data-contrast-choice]').forEach(function (btn) {
+    btn.addEventListener('click', function () { setAppearance({ contrast: btn.getAttribute('data-contrast-choice') }); });
+  });
+
+  var grainToggle = document.getElementById('grain-toggle');
+  if (grainToggle) {
+    grainToggle.addEventListener('change', function () {
+      setAppearance({ grain: grainToggle.checked ? 'on' : 'off' });
     });
   }
 
-  applyTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark', false);
+  var resetBtn = document.getElementById('theme-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      appearance = { theme: 'dark', accent: 'lime', contrast: 'standard', grain: 'on' };
+      paint(true);
+    });
+  }
+
+  function closePanel() {
+    if (!panel) return;
+    if (typeof panel.close === 'function') panel.close();
+    else panel.removeAttribute('open');
+  }
+
+  if (openBtn && panel) {
+    openBtn.addEventListener('click', function () {
+      if (typeof panel.showModal === 'function') panel.showModal();
+      else panel.setAttribute('open', '');
+      openBtn.setAttribute('aria-expanded', 'true');
+    });
+    panel.addEventListener('close', function () {
+      openBtn.setAttribute('aria-expanded', 'false');
+      openBtn.focus();
+    });
+    panel.addEventListener('click', function (event) {
+      if (event.target === panel) closePanel();
+    });
+  }
+  var themeClose = document.getElementById('theme-close');
+  var themeDone = document.getElementById('theme-done');
+  if (themeClose) themeClose.addEventListener('click', closePanel);
+  if (themeDone) themeDone.addEventListener('click', closePanel);
 
   // Share: the native sheet on phones, the clipboard everywhere else. The
   // status line starts empty in the markup and is only filled at runtime.
@@ -204,8 +294,8 @@
     if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
     var key = (event.key || '').toLowerCase();
 
-    if (key === 't' && themeToggle) {
-      themeToggle.click();
+    if (key === 't' && panel && !panel.open) {
+      setAppearance({ theme: appearance.theme === 'light' ? 'dark' : 'light' });
     } else if (key === 'f' && filterButtons.length) {
       event.preventDefault();
       var active = document.querySelector('.filter-btn[aria-pressed="true"]') || filterButtons[0];

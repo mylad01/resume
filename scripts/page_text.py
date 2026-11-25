@@ -20,6 +20,8 @@ SNAPSHOT = ROOT / "scripts" / "text-snapshot.txt"
 def text_lines(markup: str) -> list[str]:
     markup = re.sub(r"<!--.*?-->", "", markup, flags=re.S)
     markup = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", "", markup, flags=re.S | re.I)
+    # UI chrome (appearance panel and the like) is marked data-ui: it is not CV copy.
+    markup = re.sub(r"<([a-zA-Z][\w-]*)[^>]*\bdata-ui\b[^>]*>.*?</\1>", "", markup, flags=re.S | re.I)
     body = re.search(r"<body\b[^>]*>(.*)</body>", markup, flags=re.S | re.I)
     markup = body.group(1) if body else markup
 

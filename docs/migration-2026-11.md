@@ -71,3 +71,33 @@ Copy is untouched; `scripts/text-snapshot.txt` still matches byte for byte.
 
 Constraints kept: no new visible copy in `index.html` (icons carry `aria-label`
 only), no third-party JS, no build step.
+
+## Phase 3 — appearance engine, installable page, generated PDF (2026-11-25)
+
+Copy is unchanged; the frozen-copy check now skips `data-ui` subtrees, so the
+appearance panel's own labels are chrome, not CV text.
+
+1. Appearance panel (`#theme-panel`, opened from the palette button in the
+   header). Four controls, all applied as attributes on `<html>` and persisted
+   in `localStorage` (`mn-appearance`):
+   - theme: dark (default) or light,
+   - accent: lime, teal, amber, violet, ice — each block in `css/style.css`
+     sets `--accent`, `--lime`, `--lime-ink`, `--mark-1..4` and the hover line
+     for both themes,
+   - contrast: standard or high (raises the muted text tokens),
+   - film grain on/off.
+   The head script applies the saved look before first paint. `t` still toggles
+   the theme; the panel is the place everything else lives.
+2. Installable page. `manifest.webmanifest` plus `sw.js`: HTML is
+   **network-first** (a new CV is never hidden behind the cache), assets are
+   cache-first because they carry `?v=`. Icons come from
+   `scripts/make_assets.py` (192, 512, maskable 512).
+3. Generated PDF. `scripts/make_pdf.py` parses `index.html` and lays the same
+   words out with reportlab (`pip install reportlab`), portrait included; it
+   refuses to run if the expected page structure is missing. `verify.sh`
+   cross-checks the PDF with poppler when it is installed: all four entries, no
+   stray text, exactly one page.
+
+Cache version: `?v=20261125b`. Whenever CSS or JS changes, bump that string in
+`index.html` **and** in `sw.js` (cache name plus the `CORE` list) together, or
+returning visitors keep the old files.

@@ -34,18 +34,38 @@ check "contact links"     has 'class="contact-links"' index.html
 check "copy hook"         has 'id="copy-email"' index.html
 check "breakpoints"       has 'max-width: 760px' css/style.css
 check "reduced motion"    has 'prefers-reduced-motion: reduce' css/style.css
-check "theme toggle"      has 'id="theme-toggle"' index.html
+check "appearance panel"  has 'id="theme-panel"' index.html
+check "accent palette"    has ':root[data-accent="teal"]' css/style.css
+check "appearance store"  has "mn-appearance" js/main.js
 check "theme tokens"      has '--accent: var(--lime)' css/style.css
 check "light theme"       has ':root[data-theme="light"]' css/style.css
 check "theme meta"        has 'name="color-scheme" content="dark light"' index.html
 check "mark tokens"       has "getPropertyValue('--mark-'" js/mark.js
 check "section rail"      count_is 'data-rail=' index.html 5
 check "share button"      has 'id="share-page"' index.html
-check "cache-busted css"  bash -c 'grep -qE "css/style\.css\?v=[0-9]+" index.html'
-check "cache-busted js"   bash -c '[ "$(grep -cE "js/(main|mark)\.js\?v=[0-9]+" index.html)" -eq 2 ]'
+check "cache-busted css"  bash -c 'grep -qE "css/style\.css\?v=[0-9a-z]+" index.html'
+check "cache-busted js"   bash -c '[ "$(grep -cE "js/(main|mark)\.js\?v=[0-9a-z]+" index.html)" -eq 2 ]'
 check "ci gate"           has 'scripts/verify.sh' .github/workflows/verify.yml
 check "404 redirect"      has 'url=./' 404.html
 check "404 root detect"   has "indexOf('/resume/')" 404.html
+check "pwa manifest"      has '"start_url"' manifest.webmanifest
+check "pwa standalone"    has '"display": "standalone"' manifest.webmanifest
+check "pwa maskable"      has 'icon-maskable-512.png' manifest.webmanifest
+check "pwa icons on disk" bash -c 'test -s assets/icon-192.png -a -s assets/icon-512.png -a -s assets/icon-maskable-512.png'
+check "sw network-first"  has "request.mode === 'navigate'" sw.js
+check "sw caches build"   has './css/style.css?v=20261125b' sw.js
+check "sw registered"     has 'serviceWorker.register' js/main.js
+check "panel not printed" has '.theme-panel { display: none' css/style.css
+
+# The PDF is generated from index.html; cross-check it when poppler is around.
+if command -v pdftotext >/dev/null 2>&1; then
+  pdftxt=$(mktemp)
+  pdftotext assets/Milad-Nasrollahi-CV.pdf "$pdftxt" 2>/dev/null
+  check "pdf has every role" bash -c 'for t in "Automation & Python Projects" "Computer Technician" "Insurance Clerk" "Associate Degree in Insurance"; do grep -qF "$t" "$1" || exit 1; done' _ "$pdftxt"
+  check "pdf no stray text"  bash -c '! grep -q "Hello," "$1"' _ "$pdftxt"
+  check "pdf one page"       bash -c '[ "$(tr -cd "\f" < "$1" | wc -c)" -eq 1 ]' _ "$pdftxt"
+  rm -f "$pdftxt"
+fi
 check "filter deep link"  has 'URLSearchParams' js/main.js
 check "rail rule"         has '.section-rail' css/style.css
 check "share fallback"    has 'navigator.share' js/main.js
