@@ -1335,6 +1335,7 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   html[data-glass] .practice-card,
   html[data-glass] .about-facts {
     background: transparent;
+    border-color: var(--line);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;
@@ -1373,6 +1374,7 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
     --line-strong: #879675;
   }
   html, body { background: #fff !important; color: #20271b; }
+  .category-support, .category-auto, .category-other { color: var(--muted); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html.js [data-reveal] { opacity: 1 !important; transform: none !important; }
   html.js [data-reveal] .experience-row,
