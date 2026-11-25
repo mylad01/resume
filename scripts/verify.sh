@@ -63,6 +63,12 @@ check "glass preset"      has 'glass: {' js/theme.js
 check "glass strength ui" has 'data-glass-choice="strong"' index.html
 check "glass css hooks"   has 'html[data-glass="strong"]' css/style.css
 check "copy fallback"     has 'document.execCommand' js/main.js
+check "motion tokens"     has '--dur-3: 340ms' css/style.css
+check "entrance motion"   has '@keyframes mn-rise' css/style.css
+check "reveal stagger"    has 'calc(var(--i, 0) * var(--stagger))' css/style.css
+check "stagger index"     has "setProperty('--i'" js/main.js
+check "parallax mount"    has 'data-parallax="0.05"' index.html
+check "parallax reduced"  has "prefers-reduced-motion: reduce" js/main.js
 
 # The PDF is generated from index.html; cross-check it when poppler is around.
 if command -v pdftotext >/dev/null 2>&1; then

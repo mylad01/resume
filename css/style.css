@@ -56,6 +56,15 @@
   --mark-4: #d2f89b;
 
   /* type + measure */
+  /* motion: feedback is quick, layout shifts are slow, reveals share one ease */
+  --ease-out: cubic-bezier(.22, .68, .36, 1);
+  --ease-in: cubic-bezier(.55, .06, .68, .19);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 340ms;
+  --dur-4: 380ms;
+  --stagger: 60ms;
+
   --wrap: 1280px;
   --font-body: Arial, Helvetica, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
@@ -773,6 +782,18 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
   font-size: 22px;
   color: var(--accent);
 }
+/* The band outgrows the wrap before the phone breakpoint: scroll it rather
+   than clip the last discipline. */
+@media (max-width: 960px) {
+  .discipline-strip {
+    justify-content: flex-start;
+    gap: 22px;
+    padding-inline: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .discipline-strip::-webkit-scrollbar { display: none; }
+}
 /* --- about -------------------------------------------------------------- */
 
 .about-section {
@@ -1158,36 +1179,112 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
 .site-footer > a:hover { color: var(--accent); }
 .footer-brand { display: flex; align-items: center; gap: 10px; }
 .footer-brand .wordmark-initials { font-size: 14px; letter-spacing: -1px; color: var(--text); }
+/* --- first-load entrance ------------------------------------------------ */
+/* The page composes itself: the copy rises line by line, the monogram panel
+   settles last. Base styles are the finished page, so print, reduced motion
+   and no-JS all show it complete — the animation only adds the from-state. */
+
+@keyframes mn-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mn-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mn-panel {
+  from { opacity: 0; transform: translateY(12px) scale(.994); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mn-ring {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.94); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes mn-rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+html.js .navigation { animation: mn-fade var(--dur-3) var(--ease-out) both; }
+html.js .nav-actions { animation: mn-fade var(--dur-3) var(--ease-out) 60ms both; }
+
+html.js .hero-copy > * { animation: mn-rise var(--dur-3) var(--ease-out) both; }
+html.js .hero-copy > :nth-child(1) { animation-delay: 40ms; }
+html.js .hero-copy > :nth-child(2) { animation-delay: 90ms; }
+html.js .hero-copy > :nth-child(3) { animation-delay: 140ms; }
+html.js .hero-copy > :nth-child(4) { animation-delay: 190ms; }
+html.js .hero-copy > :nth-child(5) { animation-delay: 240ms; }
+html.js .hero-copy > :nth-child(6) { animation-delay: 290ms; }
+
+html.js .intro-rule {
+  transform-origin: left center;
+  animation: mn-rule var(--dur-4) var(--ease-out) 240ms both;
+}
+
+html.js .experiment { animation: mn-panel var(--dur-4) var(--ease-out) 120ms both; }
+html.js .sculpture .orbit-ring { animation: mn-ring var(--dur-3) var(--ease-out) 220ms both; }
+html.js .sculpture .ring-two { animation-delay: 280ms; }
+html.js .sculpture-caption { animation: mn-fade var(--dur-3) var(--ease-out) 340ms both; }
+html.js .hero-bottom { animation: mn-fade var(--dur-3) var(--ease-out) 320ms both; }
+html.js .discipline-strip { animation: mn-fade var(--dur-3) var(--ease-out) 360ms both; }
+
 /* --- reveal on scroll --------------------------------------------------- */
 
 html.js [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity .7s cubic-bezier(.2, .7, .3, 1), transform .7s cubic-bezier(.2, .7, .3, 1);
+  transform: translateY(20px);
+  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-3) var(--ease-out);
 }
 html.js [data-reveal].is-in { opacity: 1; transform: none; }
 
-/* Stagger: rows and cards rise in sequence once their section is in view. */
+/* Stagger: main.js numbers the children with --i, so a group of rows, cards
+   or facts arrives in sequence without hard-coded positions. */
 html.js [data-reveal] .experience-row,
-html.js [data-reveal] .practice-card { opacity: 0; }
+html.js [data-reveal] .practice-card,
+html.js [data-reveal] .section-heading > *,
+html.js [data-reveal] .about-facts > * { opacity: 0; }
+
+html.js [data-reveal] .experience-row,
+html.js [data-reveal] .practice-card {
+  transform: translateY(14px);
+}
 
 html.js [data-reveal] .experience-row {
-  transform: translateY(16px);
-  transition: opacity .55s cubic-bezier(.2, .7, .3, 1), transform .55s cubic-bezier(.2, .7, .3, 1), background-color .3s ease;
+  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-3) var(--ease-out), background-color var(--dur-2) ease;
 }
-
-html.js [data-reveal].is-in .experience-row { opacity: 1; transform: none; }
-html.js [data-reveal].is-in .experience-row:nth-of-type(2) { transition-delay: .08s, .08s, 0s; }
-html.js [data-reveal].is-in .experience-row:nth-of-type(3) { transition-delay: .16s, .16s, 0s; }
-html.js [data-reveal].is-in .experience-row:nth-of-type(4) { transition-delay: .24s, .24s, 0s; }
-
 html.js [data-reveal] .practice-card {
-  transition: opacity .55s cubic-bezier(.2, .7, .3, 1), transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-2) ease, border-color var(--dur-2) ease, box-shadow var(--dur-2) ease;
+}
+html.js [data-reveal] .section-heading > *,
+html.js [data-reveal] .about-facts > * {
+  transform: translateY(10px);
+  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-3) var(--ease-out);
 }
 
-html.js [data-reveal].is-in .practice-card { opacity: 1; }
-html.js [data-reveal].is-in .practice-card:nth-of-type(2) { transition-delay: .1s, 0s, 0s, 0s; }
-html.js [data-reveal].is-in .practice-card:nth-of-type(3) { transition-delay: .2s, 0s, 0s, 0s; }
+html.js [data-reveal].is-in .experience-row,
+html.js [data-reveal].is-in .practice-card,
+html.js [data-reveal].is-in .section-heading > *,
+html.js [data-reveal].is-in .about-facts > * {
+  opacity: 1;
+  transform: none;
+}
+html.js [data-reveal].is-in .experience-row {
+  transition-delay: calc(var(--i, 0) * var(--stagger)), calc(var(--i, 0) * var(--stagger)), 0s;
+}
+html.js [data-reveal].is-in .practice-card {
+  transition-delay: calc(var(--i, 0) * var(--stagger)), 0s, 0s, 0s;
+}
+html.js [data-reveal].is-in .section-heading > *,
+html.js [data-reveal].is-in .about-facts > * {
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+/* Scroll-linked drift: a few pixels only, painted from a rAF loop in
+   main.js, skipped entirely under prefers-reduced-motion. */
+html.js [data-parallax] {
+  transform: translate3d(0, var(--py, 0px), 0);
+  will-change: transform;
+}
 
 /* --- responsive --------------------------------------------------------- */
 
@@ -1217,7 +1314,7 @@ html.js [data-reveal].is-in .practice-card:nth-of-type(3) { transition-delay: .2
 @media (max-width: 760px) {
   .wrap { width: calc(100% - 40px); }
 
-  .navigation { height: 72px; padding: 0 20px; -webkit-backdrop-filter: none; backdrop-filter: none; gap: 12px; }
+  .navigation { height: 72px; padding: 0 20px; -webkit-backdrop-filter: none; backdrop-filter: none; gap: 12px; background: var(--bg); }
   .wordmark-initials { font-size: 25px; }
   .navigation nav { gap: 14px; }
   .navigation nav a { font-size: 10px; }
@@ -1350,7 +1447,10 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   }
   html.js [data-reveal] { opacity: 1; transform: none; }
   html.js [data-reveal] .experience-row,
-  html.js [data-reveal] .practice-card { opacity: 1 !important; transform: none !important; }
+  html.js [data-reveal] .practice-card,
+  html.js [data-reveal] .section-heading > *,
+  html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
+  html.js [data-parallax] { transform: none !important; }
 }
 
 /* --- print ------------------------------------------------------------- */
@@ -1378,7 +1478,9 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html.js [data-reveal] { opacity: 1 !important; transform: none !important; }
   html.js [data-reveal] .experience-row,
-  html.js [data-reveal] .practice-card { opacity: 1 !important; transform: none !important; }
+  html.js [data-reveal] .practice-card,
+  html.js [data-reveal] .section-heading > *,
+  html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
 
   .scroll-progress, .skip-link, .experiment, .discipline-strip, .hero-actions,
   .hero-bottom, .navigation nav, .nav-cv, .copy-button, .copy-feedback,

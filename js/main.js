@@ -227,6 +227,19 @@
   // Reveal sections once as they come up. The safety pass guarantees the copy
   // is visible even if the observer never fires.
   var revealItems = document.querySelectorAll('[data-reveal]');
+
+  // Number the staggered groups (--i) so each sequence restarts inside its own
+  // heading, row list, card grid or facts grid.
+  revealItems.forEach(function (section) {
+    ['.section-heading > *', '.experience-row', '.practice-card', '.about-facts > *'].forEach(function (selector) {
+      var index = 0;
+      section.querySelectorAll(selector).forEach(function (child) {
+        child.style.setProperty('--i', String(index));
+        index += 1;
+      });
+    });
+  });
+
   if (revealItems.length && 'IntersectionObserver' in window) {
     var revealObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -252,4 +265,40 @@
       card.style.setProperty('--my', (event.clientY - box.top) + 'px');
     });
   });
+
+  // Scroll-linked drift for the monogram: a few pixels, measured from its
+  // parent so the element's own transform never feeds back into the reading.
+  var parallaxItems = document.querySelectorAll('[data-parallax]');
+  var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var parallaxFrame = null;
+
+  function paintParallax() {
+    parallaxFrame = null;
+    if (!parallaxItems.length || (reduceMotion && reduceMotion.matches)) return;
+    var viewport = window.innerHeight || 1;
+    parallaxItems.forEach(function (item) {
+      var reference = item.parentElement || item;
+      var box = reference.getBoundingClientRect();
+      var progress = (box.top + box.height / 2 - viewport / 2) / viewport;
+      var amount = parseFloat(item.getAttribute('data-parallax')) || 0;
+      var offset = Math.max(-1, Math.min(1, progress)) * amount * 100;
+      item.style.setProperty('--py', offset.toFixed(1) + 'px');
+    });
+  }
+
+  function queueParallax() {
+    if (parallaxFrame === null) parallaxFrame = requestAnimationFrame(paintParallax);
+  }
+
+  if (parallaxItems.length) {
+    window.addEventListener('scroll', queueParallax, { passive: true });
+    window.addEventListener('resize', queueParallax);
+    if (reduceMotion && reduceMotion.addEventListener) {
+      reduceMotion.addEventListener('change', function () {
+        parallaxItems.forEach(function (item) { item.style.setProperty('--py', '0px'); });
+        queueParallax();
+      });
+    }
+    paintParallax();
+  }
 })();

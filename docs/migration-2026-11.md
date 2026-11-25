@@ -116,7 +116,18 @@ appearance panel's own labels are chrome, not CV text.
    API is blocked or missing, so COPY works in strict browsers and plain HTTP.
    The share sheet's copy-link path uses the same helper.
 
-Cache version: `?v=20261125e`. Whenever CSS or JS changes, bump that string in
+Cache version: `?v=20261125h`. Whenever CSS or JS changes, bump that string in
 `index.html` **and** in `sw.js` (cache name plus the `CORE` list) together, or
 returning visitors keep the old files. `verify.sh` reads the version out of
 `index.html` and fails if `sw.js` disagrees, so the two cannot drift.
+
+5. Motion system. Motion tokens live in `:root` (`--dur-1`…`--dur-4`,
+   `--ease-out`, `--ease-in`, `--stagger`). First load composes the hero with
+   `mn-rise` / `mn-panel` / `mn-ring` / `mn-rule`, staggered 40–360 ms; rows,
+   cards, section headings and about facts reveal on scroll with their order
+   set as `--i` by `main.js`, so groups never share one running index. The
+   monogram drifts a few pixels from scroll (`data-parallax`). Every rule is
+   inside `html.js` with the finished page as the base style, so no-JS, print
+   and `prefers-reduced-motion` all show the complete page. The mobile nav is
+   opaque because the blur is disabled there.
+
