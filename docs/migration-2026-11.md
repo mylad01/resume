@@ -78,16 +78,24 @@ Copy is unchanged; the frozen-copy check now skips `data-ui` subtrees, so the
 appearance panel's own labels are chrome, not CV text.
 
 1. Appearance panel (`#theme-panel`, opened from the palette button in the
-   header). Four controls, all applied as attributes on `<html>` and persisted
-   in `localStorage` (`mn-appearance`):
-   - theme: dark (default) or light,
-   - accent: lime, teal, amber, violet, ice — each block in `css/style.css`
-     sets `--accent`, `--lime`, `--lime-ink`, `--mark-1..4` and the hover line
-     for both themes,
-   - contrast: standard or high (raises the muted text tokens),
-   - film grain on/off.
-   The head script applies the saved look before first paint. `t` still toggles
-   the theme; the panel is the place everything else lives.
+   header). A role editor, not a swatch list (theme engine in `js/theme.js`):
+   - seven editable roles: background, surface, card, text, muted text, accent,
+     border — each with a colour input and a hex field, applied live;
+   - every other token (`--text-2..4`, `--muted-2/3`, `--line-soft/strong/hover`,
+     `--card-wash`, `--row-hover`, `--ring-line`, `--grid`, `--nav-bg`,
+     `--bg-soft`, `--lime*`, `--glow`, `--dot-glow`, `--mark-1..4`, `--shadow`)
+     is derived from those seven, so the page stays coherent;
+   - derived text tokens have a contrast floor: `tone()` walks the fade back
+     toward the background until the colour clears 4.5:1 on background **and**
+     card, so light presets cannot produce unreadable small type;
+   - five presets (night, paper, slate, forest, sand), a contrast readout, a
+     grain switch and a mode toggle; `t` still swaps night ↔ paper;
+   - persisted in `localStorage` (`mn-theme-v2`) as the role set **plus** the
+     derived token map, so the head script repaints before first paint with no
+     colour maths. Inline token styles are stripped on `beforeprint` and
+     re-applied after, so the print sheet still wins.
+   Panel chrome is `data-ui`, so it is not part of the frozen-copy check.
+
 2. Installable page. `manifest.webmanifest` plus `sw.js`: HTML is
    **network-first** (a new CV is never hidden behind the cache), assets are
    cache-first because they carry `?v=`. Icons come from
@@ -98,6 +106,7 @@ appearance panel's own labels are chrome, not CV text.
    cross-checks the PDF with poppler when it is installed: all four entries, no
    stray text, exactly one page.
 
-Cache version: `?v=20261125b`. Whenever CSS or JS changes, bump that string in
+Cache version: `?v=20261125c`. Whenever CSS or JS changes, bump that string in
 `index.html` **and** in `sw.js` (cache name plus the `CORE` list) together, or
-returning visitors keep the old files.
+returning visitors keep the old files. `verify.sh` reads the version out of
+`index.html` and fails if `sw.js` disagrees, so the two cannot drift.

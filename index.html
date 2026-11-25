@@ -14,28 +14,28 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="canonical" href="https://mylad01.github.io/resume/">
   <script>
-    // Pick the saved appearance before first paint so the page never flashes.
+    // Paint the saved theme before first paint: the derived tokens are stored
+    // as a flat map, so this is a plain loop with no colour maths.
     (function () {
       var root = document.documentElement;
-      var stored = null;
-      try { stored = JSON.parse(localStorage.getItem('mn-appearance') || 'null'); } catch (e) {}
-      if (!stored) {
-        var legacy = null;
-        try { legacy = localStorage.getItem('mn-theme'); } catch (e) {}
-        stored = { theme: legacy === 'light' ? 'light' : 'dark' };
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem('mn-theme-v2') || 'null'); } catch (e) {}
+      if (saved && saved.tokens) {
+        Object.keys(saved.tokens).forEach(function (name) {
+          root.style.setProperty(name, saved.tokens[name]);
+        });
+        root.setAttribute('data-theme', saved.mode === 'light' ? 'light' : 'dark');
+        if (saved.contrast === 'high') root.setAttribute('data-contrast', 'high');
+        if (saved.grain === 'off') root.setAttribute('data-grain', 'off');
+      } else {
+        root.setAttribute('data-theme', 'dark');
       }
-      // Dark is the brand default; light only when the visitor chose it.
-      var light = stored.theme === 'light';
-      root.setAttribute('data-theme', light ? 'light' : 'dark');
-      if (stored.accent && stored.accent !== 'lime') root.setAttribute('data-accent', stored.accent);
-      if (stored.contrast === 'high') root.setAttribute('data-contrast', 'high');
-      if (stored.grain === 'off') root.setAttribute('data-grain', 'off');
       if ('IntersectionObserver' in window) root.className += ' js';
       var meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', light ? '#f4f5ee' : '#111310');
+      if (meta && saved && saved.roles && saved.roles.bg) meta.setAttribute('content', saved.roles.bg);
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261125b">
+  <link rel="stylesheet" href="css/style.css?v=20261125c">
 
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Milad Nasrollahi">
@@ -408,21 +408,27 @@
     </div>
 
     <fieldset class="theme-group">
-      <legend>Theme</legend>
-      <div class="segmented">
-        <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
-        <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <legend>Presets</legend>
+      <div class="theme-presets">
+        <button type="button" class="preset" data-preset="night" aria-pressed="true">Night</button>
+        <button type="button" class="preset" data-preset="paper" aria-pressed="false">Paper</button>
+        <button type="button" class="preset" data-preset="slate" aria-pressed="false">Slate</button>
+        <button type="button" class="preset" data-preset="forest" aria-pressed="false">Forest</button>
+        <button type="button" class="preset" data-preset="sand" aria-pressed="false">Sand</button>
       </div>
     </fieldset>
 
     <fieldset class="theme-group">
-      <legend>Accent</legend>
-      <div class="swatches">
-        <button type="button" class="swatch" data-accent-choice="lime" aria-pressed="true" aria-label="Lime accent"><span class="swatch-dot" aria-hidden="true"></span></button>
-        <button type="button" class="swatch" data-accent-choice="teal" aria-pressed="false" aria-label="Teal accent"><span class="swatch-dot" aria-hidden="true"></span></button>
-        <button type="button" class="swatch" data-accent-choice="amber" aria-pressed="false" aria-label="Amber accent"><span class="swatch-dot" aria-hidden="true"></span></button>
-        <button type="button" class="swatch" data-accent-choice="violet" aria-pressed="false" aria-label="Violet accent"><span class="swatch-dot" aria-hidden="true"></span></button>
-        <button type="button" class="swatch" data-accent-choice="ice" aria-pressed="false" aria-label="Ice accent"><span class="swatch-dot" aria-hidden="true"></span></button>
+      <legend>Colours</legend>
+      <div class="theme-roles" id="theme-roles"></div>
+      <p class="theme-ratio" id="theme-ratio" role="status" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="theme-group">
+      <legend>Mode</legend>
+      <div class="segmented">
+        <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
       </div>
     </fieldset>
 
@@ -445,7 +451,8 @@
     </div>
   </dialog>
 
-  <script src="js/mark.js?v=20261125b"></script>
-  <script src="js/main.js?v=20261125b"></script>
+  <script src="js/theme.js?v=20261125c"></script>
+  <script src="js/mark.js?v=20261125c"></script>
+  <script src="js/main.js?v=20261125c"></script>
 </body>
 </html>

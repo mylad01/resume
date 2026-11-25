@@ -35,8 +35,9 @@ check "copy hook"         has 'id="copy-email"' index.html
 check "breakpoints"       has 'max-width: 760px' css/style.css
 check "reduced motion"    has 'prefers-reduced-motion: reduce' css/style.css
 check "appearance panel"  has 'id="theme-panel"' index.html
-check "accent palette"    has ':root[data-accent="teal"]' css/style.css
-check "appearance store"  has "mn-appearance" js/main.js
+check "role pickers"      has "data-role-hex" js/theme.js
+check "token derivation"  has "'--mark-1'" js/theme.js
+check "theme store"       has "mn-theme-v2" js/theme.js
 check "theme tokens"      has '--accent: var(--lime)' css/style.css
 check "light theme"       has ':root[data-theme="light"]' css/style.css
 check "theme meta"        has 'name="color-scheme" content="dark light"' index.html
@@ -53,7 +54,9 @@ check "pwa standalone"    has '"display": "standalone"' manifest.webmanifest
 check "pwa maskable"      has 'icon-maskable-512.png' manifest.webmanifest
 check "pwa icons on disk" bash -c 'test -s assets/icon-192.png -a -s assets/icon-512.png -a -s assets/icon-maskable-512.png'
 check "sw network-first"  has "request.mode === 'navigate'" sw.js
-check "sw caches build"   has './css/style.css?v=20261125b' sw.js
+build=$(grep -o 'style\.css?v=[0-9a-z]*' index.html | head -1 | cut -d= -f2)
+check "sw caches build"   has "./css/style.css?v=$build" sw.js
+check "sw cache version"  has "mn-cv-$build" sw.js
 check "sw registered"     has 'serviceWorker.register' js/main.js
 check "panel not printed" has '.theme-panel { display: none' css/style.css
 
