@@ -109,20 +109,24 @@ def touch_icon(size: int = 180) -> None:
 def app_icon(size: int, maskable: bool = False) -> None:
     image = Image.new("RGB", (size, size), BG)
     draw = ImageDraw.Draw(image)
-    if not maskable:
-        draw.rounded_rectangle([(0, 0), (size - 1, size - 1)], radius=int(size * 0.16), fill=BG)
 
-    # Maskable icons are cropped to a circle: keep the mark inside the safe zone.
-    scale = 0.36 if maskable else 0.40
-    font = load(int(size * scale), bold=True)
+    # Maskable icons get cropped to a circle: keep the mark inside the safe zone.
+    font = load(int(size * (0.34 if maskable else 0.40)), bold=True)
     text = "MN"
-    baseline = 0.335 if maskable else 0.30
-    draw.text(((size - draw.textlength(text, font=font)) / 2, size * baseline),
-              text, font=font, fill=TEXT)
-    line_y = 0.655 if maskable else 0.70
-    half = 0.15 if maskable else 0.19
-    draw.line([(size * (0.5 - half), size * line_y), (size * (0.5 + half), size * line_y)],
-              fill=LIME, width=max(2, size // 60))
+    left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+    text_w, text_h = right - left, bottom - top
+    rule_w = size * (0.34 if maskable else 0.42)
+    rule_h = max(2, size // 80)
+    gap = size * 0.055
+
+    block_h = text_h + gap + rule_h
+    block_top = (size - block_h) / 2
+    text_y = block_top - top
+    rule_y = block_top + text_h + gap
+
+    draw.text(((size - text_w) / 2 - left, text_y), text, font=font, fill=TEXT)
+    draw.line([(size / 2 - rule_w / 2, rule_y), (size / 2 + rule_w / 2, rule_y)],
+              fill=LIME, width=rule_h)
 
     path = ASSETS / ("icon-maskable-%d.png" % size if maskable else "icon-%d.png" % size)
     image.save(path, optimize=True)
