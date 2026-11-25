@@ -1,14 +1,14 @@
 /* Service worker for the CV page.
    HTML is network-first so a freshly published CV is never hidden by the
    cache; assets are cache-first because they carry a ?v= version. */
-var CACHE = 'mn-cv-20261125h';
+var CACHE = 'mn-cv-20261125i';
 var CORE = [
   './',
   './index.html',
-  './css/style.css?v=20261125h',
-  './js/theme.js?v=20261125h',
-  './js/main.js?v=20261125h',
-  './js/mark.js?v=20261125h',
+  './css/style.css?v=20261125i',
+  './js/theme.js?v=20261125i',
+  './js/main.js?v=20261125i',
+  './js/mark.js?v=20261125i',
   './assets/favicon.svg',
   './assets/profile.webp',
   './manifest.webmanifest'

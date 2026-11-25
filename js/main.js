@@ -12,16 +12,34 @@
   }
 
   var progress = document.getElementById('scroll-progress');
+  var rail = document.querySelector('.section-rail');
+  var railFill = rail ? rail.querySelector('.ledger-fill') : null;
+  var railRead = rail ? rail.querySelector('.ledger-read') : null;
+  var railItems = rail ? Array.prototype.slice.call(rail.querySelectorAll('a[data-rail]')) : [];
 
-  function updateProgress() {
+  function readFraction() {
     var doc = document.documentElement;
     var max = doc.scrollHeight - doc.clientHeight;
-    progress.style.transform = 'scaleX(' + (max > 0 ? Math.min(doc.scrollTop / max, 1) : 0) + ')';
+    return max > 0 ? Math.min(doc.scrollTop / max, 1) : 0;
   }
 
-  if (progress) {
-    window.addEventListener('scroll', updateProgress, { passive: true });
-    window.addEventListener('resize', updateProgress);
+  function updateProgress() {
+    var fraction = readFraction();
+    if (progress) progress.style.transform = 'scaleX(' + fraction + ')';
+    if (railRead) railRead.setAttribute('data-pct', String(Math.round(fraction * 100)).padStart(2, '0'));
+  }
+
+  if (progress || railRead) {
+    var progressFrame = null;
+    var queueProgress = function () {
+      if (progressFrame !== null) return;
+      progressFrame = requestAnimationFrame(function () {
+        progressFrame = null;
+        updateProgress();
+      });
+    };
+    window.addEventListener('scroll', queueProgress, { passive: true });
+    window.addEventListener('resize', function () { queueProgress(); paintLedgerFill(); });
     updateProgress();
   }
 
@@ -30,14 +48,51 @@
   var railLinks = document.querySelectorAll('.section-rail a');
   var sections = document.querySelectorAll('#hero, #about, #experience, #practice, #contact');
 
+  // The reading ledger: the current section's tick goes accent, every tick
+  // above it stays marked as read, and the fill stops on the current section.
+  function paintLedgerFill() {
+    if (!railFill || !railItems.length) return;
+    var ticks = railFill.parentElement;
+    var box = ticks.getBoundingClientRect();
+    if (!box.height) return;
+    var current = null;
+    railItems.forEach(function (link) {
+      if (link.getAttribute('aria-current') === 'true') current = link;
+    });
+    if (!current) return;
+    var tick = current.getBoundingClientRect();
+    var centre = tick.top + tick.height / 2 - box.top;
+    var fraction = Math.max(0, Math.min(1, centre / box.height));
+    railFill.style.transform = 'scaleY(' + fraction.toFixed(3) + ')';
+  }
+
   function markCurrent(id) {
-    document.querySelectorAll('.navigation nav a, .section-rail a').forEach(function (link) {
+    var index = -1;
+    railItems.forEach(function (link, i) {
+      if (link.getAttribute('data-rail') === id) index = i;
+    });
+    document.querySelectorAll('.navigation nav a').forEach(function (link) {
       if (link.getAttribute('href') === '#' + id) {
         link.setAttribute('aria-current', 'true');
       } else {
         link.removeAttribute('aria-current');
       }
     });
+    railItems.forEach(function (link, i) {
+      var on = i === index;
+      if (on) {
+        link.setAttribute('aria-current', 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+      link.classList.toggle('is-read', index > -1 && i < index);
+      link.classList.remove('is-hit');
+      if (on) {
+        void link.offsetWidth;
+        link.classList.add('is-hit');
+      }
+    });
+    paintLedgerFill();
   }
 
   if (sections.length && 'IntersectionObserver' in window) {
@@ -48,6 +103,42 @@
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     sections.forEach(function (section) { observer.observe(section); });
+  }
+
+  // Number the rail ticks so they write in one after another (CSS reads --i).
+  railItems.forEach(function (link, i) { link.style.setProperty('--i', String(i)); });
+
+  // Jump links land settled: the target's reveals are already in on arrival.
+  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      var id = (link.getAttribute('href') || '').slice(1);
+      var target = id ? document.getElementById(id) : null;
+      if (!target || !target.closest) return;
+      var section = target.closest('[data-reveal]');
+      if (section && !section.classList.contains('is-in')) {
+        section.classList.add('is-in', 'is-settled');
+      }
+    });
+  });
+
+  // Split the hero heading into words so each rises behind its own baseline.
+  // The copy is unchanged and no-JS keeps the plain heading.
+  var heroTitle = document.querySelector('.hero h1');
+  if (heroTitle) {
+    var heroWords = heroTitle.textContent.trim().split(/\s+/);
+    if (heroWords.length > 1) {
+      heroTitle.textContent = '';
+      heroWords.forEach(function (word, i) {
+        var outer = document.createElement('span');
+        outer.className = 'word';
+        outer.style.setProperty('--i', String(i));
+        var inner = document.createElement('span');
+        inner.textContent = word;
+        outer.appendChild(inner);
+        heroTitle.appendChild(outer);
+        if (i < heroWords.length - 1) heroTitle.appendChild(document.createTextNode(' '));
+      });
+    }
   }
 
   // Category filters. aria-pressed is the only state; CSS styles it.
@@ -249,8 +340,12 @@
       });
     }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
     revealItems.forEach(function (item) { revealObserver.observe(item); });
+    // Safety pass: reveal anything already at or above the viewport, so no copy
+    // can stay hidden, while sections further down still reveal on scroll.
     setTimeout(function () {
-      revealItems.forEach(function (item) { item.classList.add('is-in'); });
+      revealItems.forEach(function (item) {
+        if (item.getBoundingClientRect().top < window.innerHeight) item.classList.add('is-in');
+      });
     }, 2500);
   } else {
     revealItems.forEach(function (item) { item.classList.add('is-in'); });

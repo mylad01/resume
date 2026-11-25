@@ -63,7 +63,7 @@
   --dur-2: 200ms;
   --dur-3: 340ms;
   --dur-4: 380ms;
-  --stagger: 60ms;
+  --stagger: 70ms;
 
   --wrap: 1280px;
   --font-body: Arial, Helvetica, sans-serif;
@@ -270,36 +270,136 @@ h2 {
 
 .nav-actions { display: flex; align-items: center; gap: 12px; }
 
-/* Desktop section rail: markers only, labelled for screen readers. */
+/* Desktop reading ledger: the eyebrow numbering (01, 02 …) on numbered ticks,
+   a fill that stops on the current section and a live read-out. Labels are
+   generated from data-label so the rail adds no page copy. */
 .section-rail {
   position: fixed;
   top: 50%;
-  right: 20px;
+  right: 10px;
   z-index: 15;
   display: none;
   flex-direction: column;
   align-items: flex-end;
-  gap: 14px;
+  width: 46px;
   transform: translateY(-50%);
+  font-family: var(--font-mono);
+}
+.ledger-read {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0 4px 12px 0;
+  font-variant-numeric: tabular-nums;
+}
+.ledger-read::before {
+  content: "READ";
+  font-size: 7px;
+  letter-spacing: 1.4px;
+  color: var(--muted-3);
+}
+.ledger-read::after {
+  content: attr(data-pct) "%";
+  font-size: 10px;
+  letter-spacing: .5px;
+  color: var(--accent);
+}
+.ledger-ticks {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  width: 100%;
+}
+.ledger-ticks::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 6px;
+  width: 1px;
+  background: var(--line-strong);
+  opacity: .55;
+}
+.ledger-fill {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  width: 1px;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleY(var(--read, 0));
+  transform-origin: top;
+  transition: transform var(--dur-3) var(--ease-out);
 }
 .section-rail a {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 26px;
+  gap: 8px;
+  width: 100%;
   height: 14px;
 }
 .section-rail a::before {
+  content: attr(data-num);
+  min-width: 13px;
+  text-align: right;
+  font-size: 7px;
+  letter-spacing: .4px;
+  color: var(--muted-3);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-2) ease;
+}
+.section-rail a:not([data-num])::before { content: none; }
+.section-rail a::after {
   content: "";
   display: block;
-  width: 14px;
+  width: 12px;
   height: 1px;
   background: var(--line-strong);
-  transition: width .25s ease, background-color .25s ease;
+  transform-origin: right;
+  transition: width var(--dur-2) var(--ease-out), background-color var(--dur-2) ease;
 }
-.section-rail a:hover::before { width: 22px; background: var(--text-4); }
-.section-rail a[aria-current="true"]::before { width: 26px; background: var(--accent); }
-@media (min-width: 1360px) { .section-rail { display: flex; } }
+.section-rail a:hover::after,
+.section-rail a:focus-visible::after { width: 20px; background: var(--text-4); }
+.section-rail a.is-read::before { color: var(--muted-2); }
+.section-rail a.is-read::after { background: var(--text-4); }
+.section-rail a[aria-current="true"]::before { color: var(--accent); }
+.section-rail a[aria-current="true"]::after { width: 22px; background: var(--accent); }
+
+.rail-label {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 8px);
+  transform: translate(4px, -50%);
+  padding: 3px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--panel-raised);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-2) ease, transform var(--dur-2) var(--ease-out);
+}
+.rail-label::after {
+  content: attr(data-label);
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.section-rail a:hover .rail-label,
+.section-rail a:focus-visible .rail-label { opacity: 1; transform: translate(0, -50%); }
+
+@media (min-width: 1280px) { .section-rail { display: flex; } }
+/* Wide screens have room for the current section's label to stay open. */
+@media (min-width: 1540px) {
+  .section-rail a[aria-current="true"] .rail-label { opacity: 1; transform: translate(0, -50%); }
+}
 
 .nav-cv {
   display: flex;
@@ -1228,6 +1328,60 @@ html.js .sculpture-caption { animation: mn-fade var(--dur-3) var(--ease-out) 340
 html.js .hero-bottom { animation: mn-fade var(--dur-3) var(--ease-out) 320ms both; }
 html.js .discipline-strip { animation: mn-fade var(--dur-3) var(--ease-out) 360ms both; }
 
+/* The heading rises word by word behind its own baseline. main.js splits it at
+   runtime; the page copy is unchanged and no-JS shows the plain line. */
+html.js .hero h1 .word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: .05em;
+  margin-bottom: -.05em;
+  vertical-align: bottom;
+}
+html.js .hero h1 .word > span {
+  display: inline-block;
+  animation: mn-word var(--dur-4) var(--ease-out) both;
+  animation-delay: calc(var(--dur-1) + var(--i, 0) * var(--stagger));
+}
+@keyframes mn-word {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+
+/* One scan pass across the monogram panel as the page settles. */
+.experiment { position: relative; }
+html.js .experiment::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 4;
+  height: 50%;
+  background: linear-gradient(180deg, transparent, var(--glow) 50%, transparent);
+  pointer-events: none;
+  animation: mn-scan calc(var(--dur-4) * 2) var(--ease-out) var(--dur-3) both;
+}
+@keyframes mn-scan {
+  from { transform: translateY(-120%); opacity: 0; }
+  40% { opacity: 1; }
+  to { transform: translateY(320%); opacity: 0; }
+}
+
+/* The reading ledger writes itself in: one tick after another. */
+html.js .section-rail { animation: mn-fade var(--dur-3) var(--ease-out) var(--dur-2) both; }
+html.js .section-rail a::after {
+  animation: mn-tick var(--dur-3) var(--ease-out) both;
+  animation-delay: calc(var(--dur-1) + var(--i, 0) * var(--stagger));
+}
+@keyframes mn-tick {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.section-rail a.is-hit::after { animation: mn-hit var(--dur-3) var(--ease-out); }
+@keyframes mn-hit {
+  0% { width: 12px; background: var(--accent); }
+  45% { width: 28px; }
+  100% { width: 22px; background: var(--accent); }
+}
+
 /* --- reveal on scroll --------------------------------------------------- */
 
 html.js [data-reveal] {
@@ -1246,20 +1400,21 @@ html.js [data-reveal] .about-facts > * { opacity: 0; }
 
 html.js [data-reveal] .experience-row,
 html.js [data-reveal] .practice-card {
-  transform: translateY(14px);
+  transform: translateY(18px);
 }
 
 html.js [data-reveal] .experience-row {
-  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-3) var(--ease-out), background-color var(--dur-2) ease;
+  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out), background-color var(--dur-2) ease;
 }
 html.js [data-reveal] .practice-card {
-  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-2) ease, border-color var(--dur-2) ease, box-shadow var(--dur-2) ease;
+  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-3) var(--ease-out), border-color var(--dur-2) ease, box-shadow var(--dur-2) ease;
 }
 html.js [data-reveal] .section-heading > *,
 html.js [data-reveal] .about-facts > * {
-  transform: translateY(10px);
-  transition: opacity var(--dur-3) var(--ease-out), transform var(--dur-3) var(--ease-out);
+  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out);
 }
+html.js [data-reveal] .section-heading > * { transform: translateY(18px); }
+html.js [data-reveal] .about-facts > * { transform: translateY(12px); }
 
 html.js [data-reveal].is-in .experience-row,
 html.js [data-reveal].is-in .practice-card,
@@ -1278,6 +1433,93 @@ html.js [data-reveal].is-in .section-heading > *,
 html.js [data-reveal].is-in .about-facts > * {
   transition-delay: calc(var(--i, 0) * var(--stagger));
 }
+
+/* --- ledger detail ------------------------------------------------------ */
+/* The rail answers each arrival: the eyebrow closes with a hairline, rows grow
+   a left rule, cards draw a top rule, facts get a tick. All of it draws only
+   when the section is in; nothing animates off-screen. */
+
+.experience-row { position: relative; }
+
+.section-heading .eyebrow::after,
+.about-copy .eyebrow::after,
+.contact-section > .eyebrow::after {
+  content: "";
+  display: inline-block;
+  width: 34px;
+  height: 1px;
+  margin-left: 12px;
+  background: var(--accent);
+  vertical-align: middle;
+  transform-origin: left;
+  transition: transform var(--dur-4) var(--ease-out) var(--dur-2);
+}
+html.js [data-reveal] .eyebrow::after { transform: scaleX(0); }
+html.js [data-reveal].is-in .eyebrow::after { transform: scaleX(1); }
+
+html.js [data-reveal] .section-heading h2 {
+  clip-path: inset(0 0 18% 0);
+  transition: clip-path var(--dur-4) var(--ease-out) var(--dur-1);
+}
+html.js [data-reveal].is-in .section-heading h2 { clip-path: inset(0 0 0 0); }
+
+html.js [data-reveal] .experience-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 32px;
+  bottom: 32px;
+  width: 1px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--dur-4) var(--ease-out), width var(--dur-2) ease;
+  transition-delay: calc(var(--i, 0) * var(--stagger)), 0s;
+}
+html.js [data-reveal].is-in .experience-row::before { transform: scaleY(1); }
+.experience-row:hover::before { width: 2px; }
+
+.practice-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent 72%);
+  transform-origin: left;
+  transition: transform var(--dur-4) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+html.js [data-reveal] .practice-card::before { transform: scaleX(0); }
+html.js [data-reveal].is-in .practice-card::before { transform: scaleX(1); }
+
+.about-facts > * { position: relative; padding-left: 13px; }
+.about-facts > *::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 1px;
+  height: 11px;
+  background: var(--accent);
+  transform-origin: top;
+  transition: transform var(--dur-4) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+html.js [data-reveal] .about-facts > *::before { transform: scaleY(0); }
+html.js [data-reveal].is-in .about-facts > *::before { transform: scaleY(1); }
+
+/* Jumping from the rail or the nav lands a section already settled. */
+html.js [data-reveal].is-settled .experience-row,
+html.js [data-reveal].is-settled .practice-card,
+html.js [data-reveal].is-settled .section-heading > *,
+html.js [data-reveal].is-settled .about-facts > *,
+html.js [data-reveal].is-settled .eyebrow::after,
+html.js [data-reveal].is-settled .section-heading h2,
+html.js [data-reveal].is-settled .experience-row::before,
+html.js [data-reveal].is-settled .practice-card::before,
+html.js [data-reveal].is-settled .about-facts > *::before { transition-delay: 0s; }
 
 /* Scroll-linked drift: a few pixels only, painted from a rAF loop in
    main.js, skipped entirely under prefers-reduced-motion. */
@@ -1451,6 +1693,11 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   html.js [data-reveal] .section-heading > *,
   html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
   html.js [data-parallax] { transform: none !important; }
+  html.js [data-reveal] .eyebrow::after,
+  html.js [data-reveal] .experience-row::before,
+  html.js [data-reveal] .practice-card::before,
+  html.js [data-reveal] .about-facts > *::before,
+  html.js [data-reveal] .section-heading h2 { transform: none !important; clip-path: none !important; }
 }
 
 /* --- print ------------------------------------------------------------- */
@@ -1481,6 +1728,15 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   html.js [data-reveal] .practice-card,
   html.js [data-reveal] .section-heading > *,
   html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
+  html.js [data-reveal] .eyebrow::after,
+  html.js [data-reveal] .experience-row::before,
+  html.js [data-reveal] .practice-card::before,
+  html.js [data-reveal] .about-facts > *::before,
+  html.js [data-reveal] .section-heading h2 { transform: none !important; clip-path: none !important; }
+  .practice-card::before, .experience-row::before,
+  .about-facts > *::before, .eyebrow::after { display: none !important; }
+  .about-facts > * { padding-left: 0; }
+  .hero h1 .word { display: inline; overflow: visible; padding: 0; margin: 0; }
 
   .scroll-progress, .skip-link, .experiment, .discipline-strip, .hero-actions,
   .hero-bottom, .navigation nav, .nav-cv, .copy-button, .copy-feedback,

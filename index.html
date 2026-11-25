@@ -36,7 +36,7 @@
       if (meta && saved && saved.roles && saved.roles.bg) meta.setAttribute('content', saved.roles.bg);
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261125h">
+  <link rel="stylesheet" href="css/style.css?v=20261125i">
 
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="Milad Nasrollahi">
@@ -107,12 +107,16 @@
     </div>
   </header>
 
-  <nav class="section-rail" aria-label="Sections">
-    <a href="#hero" aria-label="Top" data-rail="hero"></a>
-    <a href="#about" aria-label="About" data-rail="about"></a>
-    <a href="#experience" aria-label="Experience" data-rail="experience"></a>
-    <a href="#practice" aria-label="Practice" data-rail="practice"></a>
-    <a href="#contact" aria-label="Contact" data-rail="contact"></a>
+  <nav class="section-rail" aria-label="Reading progress">
+    <p class="ledger-read" aria-hidden="true" data-pct="00"></p>
+    <div class="ledger-ticks">
+      <span class="ledger-fill" aria-hidden="true"></span>
+      <a href="#hero" aria-label="Top" data-rail="hero" data-num="01"><span class="rail-label" aria-hidden="true" data-label="Top"></span></a>
+      <a href="#about" aria-label="About" data-rail="about"><span class="rail-label" aria-hidden="true" data-label="About"></span></a>
+      <a href="#experience" aria-label="Experience" data-rail="experience" data-num="02"><span class="rail-label" aria-hidden="true" data-label="Experience"></span></a>
+      <a href="#practice" aria-label="Practice" data-rail="practice" data-num="03"><span class="rail-label" aria-hidden="true" data-label="Practice"></span></a>
+      <a href="#contact" aria-label="Contact" data-rail="contact" data-num="04"><span class="rail-label" aria-hidden="true" data-label="Contact"></span></a>
+    </div>
   </nav>
 
   <main id="main">
@@ -462,8 +466,8 @@
     </div>
   </dialog>
 
-  <script src="js/theme.js?v=20261125h"></script>
-  <script src="js/mark.js?v=20261125h"></script>
-  <script src="js/main.js?v=20261125h"></script>
+  <script src="js/theme.js?v=20261125i"></script>
+  <script src="js/mark.js?v=20261125i"></script>
+  <script src="js/main.js?v=20261125i"></script>
 </body>
 </html>

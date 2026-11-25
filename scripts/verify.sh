@@ -69,6 +69,16 @@ check "reveal stagger"    has 'calc(var(--i, 0) * var(--stagger))' css/style.css
 check "stagger index"     has "setProperty('--i'" js/main.js
 check "parallax mount"    has 'data-parallax="0.05"' index.html
 check "parallax reduced"  has "prefers-reduced-motion: reduce" js/main.js
+check "ledger readout"    has 'data-pct="00"' index.html
+check "ledger fill mount" has 'class="ledger-fill"' index.html
+check "ledger numbers"    count_is 'data-num=' index.html 4
+check "ledger fill js"    has 'paintLedgerFill' js/main.js
+check "ledger labels"     has 'attr(data-label)' css/style.css
+check "ledger hit"        has 'a.is-hit::after' css/style.css
+check "hero word split"   has "className = 'word'" js/main.js
+check "settled jumps"     has "is-settled" js/main.js
+check "reveal reset"      has 'clip-path: none !important' css/style.css
+check "scan motion"       has '@keyframes mn-scan' css/style.css
 
 # The PDF is generated from index.html; cross-check it when poppler is around.
 if command -v pdftotext >/dev/null 2>&1; then
