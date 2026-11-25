@@ -79,6 +79,10 @@ check "hero word split"   has "className = 'word'" js/main.js
 check "settled jumps"     has "is-settled" js/main.js
 check "reveal reset"      has 'clip-path: none !important' css/style.css
 check "scan motion"       has '@keyframes mn-scan' css/style.css
+check "section marks"     has 'class="section-marks"' index.html
+check "section marks js"  has 'paintMarks' js/main.js
+check "section marks css" has '.section-marks i' css/style.css
+check "surname rule"      has 'word:last-child' css/style.css
 
 # The PDF is generated from index.html; cross-check it when poppler is around.
 if command -v pdftotext >/dev/null 2>&1; then

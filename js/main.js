@@ -16,6 +16,8 @@
   var railFill = rail ? rail.querySelector('.ledger-fill') : null;
   var railRead = rail ? rail.querySelector('.ledger-read') : null;
   var railItems = rail ? Array.prototype.slice.call(rail.querySelectorAll('a[data-rail]')) : [];
+  var marksHost = document.getElementById('section-marks');
+  var markNodes = marksHost ? Array.prototype.slice.call(marksHost.children) : [];
 
   function readFraction() {
     var doc = document.documentElement;
@@ -39,7 +41,7 @@
       });
     };
     window.addEventListener('scroll', queueProgress, { passive: true });
-    window.addEventListener('resize', function () { queueProgress(); paintLedgerFill(); });
+    window.addEventListener('resize', function () { queueProgress(); paintLedgerFill(); paintMarks(); });
     updateProgress();
   }
 
@@ -64,6 +66,27 @@
     var centre = tick.top + tick.height / 2 - box.top;
     var fraction = Math.max(0, Math.min(1, centre / box.height));
     railFill.style.transform = 'scaleY(' + fraction.toFixed(3) + ')';
+  }
+
+  // The top bar is cut at each section boundary, the mobile stand-in for the
+  // rail's ticks. Fractions follow the same scroll fraction as the bar.
+  function paintMarks() {
+    if (!markNodes.length) return;
+    var max = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    if (max <= 0) return;
+    var boundaries = [];
+    sections.forEach(function (section) {
+      var top = section.getBoundingClientRect().top + window.scrollY;
+      if (top > 0 && top < max) boundaries.push(top / max);
+    });
+    markNodes.forEach(function (mark, i) {
+      if (boundaries[i] === undefined) {
+        mark.style.display = 'none';
+        return;
+      }
+      mark.style.display = '';
+      mark.style.left = (boundaries[i] * 100).toFixed(3) + '%';
+    });
   }
 
   function markCurrent(id) {
@@ -141,6 +164,9 @@
     }
   }
 
+  paintMarks();
+  window.addEventListener('load', paintMarks);
+
   // Category filters. aria-pressed is the only state; CSS styles it.
   var filterButtons = document.querySelectorAll('.filter-btn[data-filter]');
   var entries = document.querySelectorAll('.experience-row[data-category]');
@@ -159,6 +185,9 @@
     if (resultCount) {
       resultCount.textContent = String(visible).padStart(2, '0') + (visible === 1 ? ' ENTRY' : ' ENTRIES');
     }
+    // Rows appear and disappear, so the section map and read-out move too.
+    paintMarks();
+    updateProgress();
   }
 
   filterButtons.forEach(function (btn) {

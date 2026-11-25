@@ -214,6 +214,25 @@ h2 {
   transform-origin: left;
   z-index: 50;
 }
+/* Section marks cut the progress bar into the same five stretches as the rail,
+   so the reading map survives on screens too narrow for the rail. */
+.section-marks {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 51;
+  pointer-events: none;
+}
+.section-marks i {
+  position: absolute;
+  top: 0;
+  height: 3px;
+  width: 2px;
+  background: var(--bg);
+  transform: translateX(-1px);
+}
 /* --- navigation --------------------------------------------------------- */
 
 .navigation {
@@ -1032,7 +1051,6 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
 }
 .experience-row:hover { background: var(--row-hover); }
 .experience-row[hidden] { display: none; }
-
 .experience-meta {
   display: flex;
   flex-direction: column;
@@ -1045,7 +1063,9 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
   font-size: 12px;
   color: var(--text-4);
   font-variant-numeric: tabular-nums;
+  transition: color var(--dur-2) ease;
 }
+.experience-row:hover .date { color: var(--text-3); }
 
 .category {
   display: flex;
@@ -1065,7 +1085,8 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
 .category-auto { color: var(--purple); }
 .category-other { color: var(--muted-2); }
 
-.job-heading h3 { margin-bottom: 8px; font-size: 22px; font-weight: 500; letter-spacing: -.5px; }
+.job-heading h3 { margin-bottom: 8px; font-size: 22px; font-weight: 500; letter-spacing: -.5px; transition: transform var(--dur-2) var(--ease-out); }
+.experience-row:hover .job-heading h3 { transform: translateX(3px); }
 
 .company {
   margin-bottom: 15px;
@@ -1345,6 +1366,20 @@ html.js .hero h1 .word > span {
 @keyframes mn-word {
   from { transform: translateY(105%); }
   to { transform: none; }
+}
+
+/* The surname carries a rule that draws once the words have landed. */
+html.js .hero h1 .word:last-child > span { position: relative; }
+html.js .hero h1 .word:last-child > span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: mn-rule var(--dur-4) var(--ease-out) calc(var(--dur-1) + var(--stagger) + var(--dur-4)) both;
 }
 
 /* One scan pass across the monogram panel as the page settles. */
@@ -1735,6 +1770,7 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   html.js [data-reveal] .section-heading h2 { transform: none !important; clip-path: none !important; }
   .practice-card::before, .experience-row::before,
   .about-facts > *::before, .eyebrow::after { display: none !important; }
+  .section-marks, .hero h1 .word:last-child > span::after { display: none !important; }
   .about-facts > * { padding-left: 0; }
   .hero h1 .word { display: inline; overflow: visible; padding: 0; margin: 0; }
 
