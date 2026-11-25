@@ -1046,7 +1046,6 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
   padding: 32px 18px;
   border-bottom: 1px solid var(--line);
   border-radius: 6px;
-  animation: appear .35s ease-out;
   transition: background-color .3s ease;
 }
 .experience-row:hover { background: var(--row-hover); }
@@ -1113,10 +1112,6 @@ body[data-theme="light"]::after { opacity: .035; mix-blend-mode: multiply; }
 }
 .experience-row:hover .tags span { border-color: var(--line-strong); }
 
-@keyframes appear {
-  from { opacity: .4; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 /* --- practice ----------------------------------------------------------- */
 
 .practice { padding-bottom: 85px; }
@@ -1426,46 +1421,43 @@ html.js [data-reveal] {
 }
 html.js [data-reveal].is-in { opacity: 1; transform: none; }
 
-/* Stagger: main.js numbers the children with --i, so a group of rows, cards
-   or facts arrives in sequence without hard-coded positions. */
-html.js [data-reveal] .experience-row,
-html.js [data-reveal] .practice-card,
-html.js [data-reveal] .section-heading > *,
-html.js [data-reveal] .about-facts > * { opacity: 0; }
-
-html.js [data-reveal] .experience-row,
-html.js [data-reveal] .practice-card {
-  transform: translateY(18px);
+/* Items reveal when they themselves reach the viewport, so a row never plays
+   its entrance while it is still below the fold. main.js numbers each group
+   with --i, so a fast scroll still arrives in sequence. */
+html.js .reveal-item {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity calc(var(--dur-4) + var(--dur-2)) var(--ease-out),
+              transform calc(var(--dur-4) + var(--dur-2)) var(--ease-out);
 }
-
-html.js [data-reveal] .experience-row {
-  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out), background-color var(--dur-2) ease;
-}
-html.js [data-reveal] .practice-card {
-  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-3) var(--ease-out), border-color var(--dur-2) ease, box-shadow var(--dur-2) ease;
-}
-html.js [data-reveal] .section-heading > *,
-html.js [data-reveal] .about-facts > * {
-  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out);
-}
-html.js [data-reveal] .section-heading > * { transform: translateY(18px); }
-html.js [data-reveal] .about-facts > * { transform: translateY(12px); }
-
-html.js [data-reveal].is-in .experience-row,
-html.js [data-reveal].is-in .practice-card,
-html.js [data-reveal].is-in .section-heading > *,
-html.js [data-reveal].is-in .about-facts > * {
+html.js .practice-card.reveal-item { transform: translateY(24px) scale(.985); }
+html.js .reveal-item.is-in {
   opacity: 1;
   transform: none;
+  transition-delay: calc(var(--i, 0) * var(--stagger));
 }
-html.js [data-reveal].is-in .experience-row {
+html.js .experience-row {
+  transition: opacity calc(var(--dur-4) + var(--dur-2)) var(--ease-out), transform calc(var(--dur-4) + var(--dur-2)) var(--ease-out), background-color var(--dur-2) ease;
+}
+html.js .experience-row.is-in {
   transition-delay: calc(var(--i, 0) * var(--stagger)), calc(var(--i, 0) * var(--stagger)), 0s;
 }
-html.js [data-reveal].is-in .practice-card {
-  transition-delay: calc(var(--i, 0) * var(--stagger)), 0s, 0s, 0s;
+html.js .practice-card {
+  transition: opacity calc(var(--dur-4) + var(--dur-2)) var(--ease-out), transform calc(var(--dur-4) + var(--dur-2)) var(--ease-out), border-color var(--dur-2) ease, box-shadow var(--dur-2) ease;
 }
-html.js [data-reveal].is-in .section-heading > *,
-html.js [data-reveal].is-in .about-facts > * {
+html.js .practice-card.is-in {
+  transition-delay: calc(var(--i, 0) * var(--stagger)), calc(var(--i, 0) * var(--stagger)), 0s, 0s;
+}
+
+/* Headings arrive with their section. */
+html.js [data-reveal] .section-heading > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out);
+}
+html.js [data-reveal].is-in .section-heading > * {
+  opacity: 1;
+  transform: none;
   transition-delay: calc(var(--i, 0) * var(--stagger));
 }
 
@@ -1498,7 +1490,7 @@ html.js [data-reveal] .section-heading h2 {
 }
 html.js [data-reveal].is-in .section-heading h2 { clip-path: inset(0 0 0 0); }
 
-html.js [data-reveal] .experience-row::before {
+html.js .experience-row::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1511,7 +1503,7 @@ html.js [data-reveal] .experience-row::before {
   transition: transform var(--dur-4) var(--ease-out), width var(--dur-2) ease;
   transition-delay: calc(var(--i, 0) * var(--stagger)), 0s;
 }
-html.js [data-reveal].is-in .experience-row::before { transform: scaleY(1); }
+html.js .experience-row.is-in::before { transform: scaleY(1); }
 .experience-row:hover::before { width: 2px; }
 
 .practice-card::before {
@@ -1526,8 +1518,8 @@ html.js [data-reveal].is-in .experience-row::before { transform: scaleY(1); }
   transition: transform var(--dur-4) var(--ease-out);
   transition-delay: calc(var(--i, 0) * var(--stagger));
 }
-html.js [data-reveal] .practice-card::before { transform: scaleX(0); }
-html.js [data-reveal].is-in .practice-card::before { transform: scaleX(1); }
+html.js .practice-card::before { transform: scaleX(0); }
+html.js .practice-card.is-in::before { transform: scaleX(1); }
 
 .about-facts > * { position: relative; padding-left: 13px; }
 .about-facts > *::before {
@@ -1542,19 +1534,18 @@ html.js [data-reveal].is-in .practice-card::before { transform: scaleX(1); }
   transition: transform var(--dur-4) var(--ease-out);
   transition-delay: calc(var(--i, 0) * var(--stagger));
 }
-html.js [data-reveal] .about-facts > *::before { transform: scaleY(0); }
-html.js [data-reveal].is-in .about-facts > *::before { transform: scaleY(1); }
+html.js .about-facts > *::before { transform: scaleY(0); }
+html.js .about-facts > *.is-in::before { transform: scaleY(1); }
 
 /* Jumping from the rail or the nav lands a section already settled. */
-html.js [data-reveal].is-settled .experience-row,
-html.js [data-reveal].is-settled .practice-card,
+/* Jumping from the rail or the nav lands a section already settled. */
+html.js .is-settled .reveal-item,
 html.js [data-reveal].is-settled .section-heading > *,
-html.js [data-reveal].is-settled .about-facts > *,
 html.js [data-reveal].is-settled .eyebrow::after,
 html.js [data-reveal].is-settled .section-heading h2,
-html.js [data-reveal].is-settled .experience-row::before,
-html.js [data-reveal].is-settled .practice-card::before,
-html.js [data-reveal].is-settled .about-facts > *::before { transition-delay: 0s; }
+html.js .is-settled .experience-row::before,
+html.js .is-settled .practice-card::before,
+html.js .is-settled .about-facts > *::before { transition-delay: 0s; }
 
 /* Scroll-linked drift: a few pixels only, painted from a rAF loop in
    main.js, skipped entirely under prefers-reduced-motion. */
@@ -1723,15 +1714,13 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
     transition: none !important;
   }
   html.js [data-reveal] { opacity: 1; transform: none; }
-  html.js [data-reveal] .experience-row,
-  html.js [data-reveal] .practice-card,
-  html.js [data-reveal] .section-heading > *,
-  html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
+  html.js .reveal-item,
+  html.js [data-reveal] .section-heading > * { opacity: 1 !important; transform: none !important; }
   html.js [data-parallax] { transform: none !important; }
-  html.js [data-reveal] .eyebrow::after,
-  html.js [data-reveal] .experience-row::before,
-  html.js [data-reveal] .practice-card::before,
-  html.js [data-reveal] .about-facts > *::before,
+  html.js .eyebrow::after,
+  html.js .experience-row::before,
+  html.js .practice-card::before,
+  html.js .about-facts > *::before,
   html.js [data-reveal] .section-heading h2 { transform: none !important; clip-path: none !important; }
 }
 
@@ -1759,14 +1748,12 @@ html[data-glass] .practice-card:hover { border-color: var(--line-hover); }
   .category-support, .category-auto, .category-other { color: var(--muted); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html.js [data-reveal] { opacity: 1 !important; transform: none !important; }
-  html.js [data-reveal] .experience-row,
-  html.js [data-reveal] .practice-card,
-  html.js [data-reveal] .section-heading > *,
-  html.js [data-reveal] .about-facts > * { opacity: 1 !important; transform: none !important; }
-  html.js [data-reveal] .eyebrow::after,
-  html.js [data-reveal] .experience-row::before,
-  html.js [data-reveal] .practice-card::before,
-  html.js [data-reveal] .about-facts > *::before,
+  html.js .reveal-item,
+  html.js [data-reveal] .section-heading > * { opacity: 1 !important; transform: none !important; }
+  html.js .eyebrow::after,
+  html.js .experience-row::before,
+  html.js .practice-card::before,
+  html.js .about-facts > *::before,
   html.js [data-reveal] .section-heading h2 { transform: none !important; clip-path: none !important; }
   .practice-card::before, .experience-row::before,
   .about-facts > *::before, .eyebrow::after { display: none !important; }

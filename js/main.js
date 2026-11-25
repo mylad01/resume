@@ -139,7 +139,13 @@
       if (!target || !target.closest) return;
       var section = target.closest('[data-reveal]');
       if (section && !section.classList.contains('is-in')) {
-        section.classList.add('is-in', 'is-settled');
+        section.classList.add('is-in');
+      }
+      if (section) {
+        section.classList.add('is-settled');
+        section.querySelectorAll('.reveal-item').forEach(function (item) {
+          item.classList.add('is-in');
+        });
       }
     });
   });
@@ -185,9 +191,11 @@
     if (resultCount) {
       resultCount.textContent = String(visible).padStart(2, '0') + (visible === 1 ? ' ENTRY' : ' ENTRIES');
     }
-    // Rows appear and disappear, so the section map and read-out move too.
+    // Rows appear and disappear, so the section map and read-out move too; a
+    // row that comes back above the fold must not sit invisible.
     paintMarks();
     updateProgress();
+    if (revealItems && revealItems.length) settleVisible(revealItems);
   }
 
   filterButtons.forEach(function (btn) {
@@ -344,39 +352,65 @@
     }
   });
 
-  // Reveal sections once as they come up. The safety pass guarantees the copy
-  // is visible even if the observer never fires.
-  var revealItems = document.querySelectorAll('[data-reveal]');
+  // Reveal once as things come up. Headings arrive with their section; rows,
+  // cards and facts arrive when they themselves reach the viewport, so nothing
+  // plays its entrance below the fold.
+  var revealSections = document.querySelectorAll('[data-reveal]');
+  var revealItems = [];
 
   // Number the staggered groups (--i) so each sequence restarts inside its own
   // heading, row list, card grid or facts grid.
-  revealItems.forEach(function (section) {
-    ['.section-heading > *', '.experience-row', '.practice-card', '.about-facts > *'].forEach(function (selector) {
+  revealSections.forEach(function (section) {
+    var headingIndex = 0;
+    section.querySelectorAll('.section-heading > *').forEach(function (child) {
+      child.style.setProperty('--i', String(headingIndex));
+      headingIndex += 1;
+    });
+    ['.experience-row', '.practice-card', '.about-facts > *'].forEach(function (selector) {
       var index = 0;
       section.querySelectorAll(selector).forEach(function (child) {
+        child.classList.add('reveal-item');
         child.style.setProperty('--i', String(index));
         index += 1;
+        revealItems.push(child);
       });
     });
   });
 
-  if (revealItems.length && 'IntersectionObserver' in window) {
-    var revealObserver = new IntersectionObserver(function (entries) {
+  function settleVisible(nodes) {
+    nodes.forEach(function (node) {
+      if (node.getBoundingClientRect().top < window.innerHeight) node.classList.add('is-in');
+    });
+  }
+
+  if (revealSections.length && 'IntersectionObserver' in window) {
+    var sectionObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-in');
-        revealObserver.unobserve(entry.target);
+        sectionObserver.unobserve(entry.target);
       });
     }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
-    revealItems.forEach(function (item) { revealObserver.observe(item); });
-    // Safety pass: reveal anything already at or above the viewport, so no copy
-    // can stay hidden, while sections further down still reveal on scroll.
-    setTimeout(function () {
-      revealItems.forEach(function (item) {
-        if (item.getBoundingClientRect().top < window.innerHeight) item.classList.add('is-in');
+
+    var itemObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-in');
+        itemObserver.unobserve(entry.target);
       });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
+
+    revealSections.forEach(function (section) { sectionObserver.observe(section); });
+    revealItems.forEach(function (item) { itemObserver.observe(item); });
+
+    // Safety pass: reveal anything already at or above the viewport, so no copy
+    // can stay hidden, while anything further down still waits for its scroll.
+    setTimeout(function () {
+      settleVisible(Array.prototype.slice.call(revealSections));
+      settleVisible(revealItems);
     }, 2500);
   } else {
+    revealSections.forEach(function (item) { item.classList.add('is-in'); });
     revealItems.forEach(function (item) { item.classList.add('is-in'); });
   }
 
